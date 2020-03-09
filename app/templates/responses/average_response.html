@@ -1,0 +1,126 @@
+{% extends "responses/response.html" %}
+<style>
+        #sortableY { list-style-type: none; margin-right: 10px; background: #eee; padding: 5px;}
+        #sortableY li {display: inline; text-align: center; margin: 5px; padding: 5px; font-size: 1.2em; width: 120px;}
+        #sortable1, #sortable2, #sortable3 { list-style-type: none; margin: 0; margin-right: 10px; background: #eee; padding: 5px; width: 10rem;}
+        #sortable1 li, #sortable2 li, #sortable3 li { text-align: center; margin: 5px; padding: 5px; font-size: 1.2em; width: 10rem; }
+        #sortableY td li {vertical-align: top; text-align: right;}
+        .empty {border:none;}
+        .contains-content {height:17rem;}
+</style>
+{% block average_response %}
+<div class="table-responsive">
+        <table class="table table-bordered">
+            {% for row,cards in cards_y.items() %}
+            {% set row_loop = loop %}
+            <tr>
+            {% set outer_loop = loop %}
+                   <td style="vertical-align:middle">
+                        <ul style="padding:25px;"id="sortableY" class="droptrue2 data_cards_y list-group list-group-horizontal">
+                            {% for card in cards %}
+                                    <li style="border:none; background-color: transparent;"class="list-group-item" id="{{ card.id }}">
+                                        <div class="card h-100" style="width: 7rem;">
+                                            {% if card.image %}
+                                                <img class="card-img-top" style="width: 100%; height: 6vw; object-fit: cover;" src="{{ url_for('static', filename='img/card_images/'~creator~'/'+card.image) }}" alt="Card Image">
+                                            {% endif %}
+                                            <div class="card-body">
+                                                {% if card.desc %}
+                                                    <h5 class="card-title" data-toggle="tooltip" data-placement="top" title="{{ card.desc }}">{{ card.name }}</h5>       
+                                                {% else %}
+                                                    <h5 class="card-title"> {{ card.name }}</h5>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </li>
+                            {% endfor %}
+                        </ul>
+                    </td>
+                    {% if loop.index0 == 0%}
+                        <td style="border:none; vertical-align:middle">
+                            <p>Highest {{ card_set_y.measure}} </p>
+                        </td>
+                    {% elif loop.index0 == study.number_of_rows-1 %}
+                        <td style="border:none; vertical-align:middle">
+                            <p>Lowest {{ card_set_y.measure }}</p>
+                        </td>
+                    {% else %}
+                        <td style="border:none;"></td>
+                    {% endif%}
+                       
+                    {% for data_value in range(0,study.number_of_columns) %}
+                        {% for colrow,values in data_values.items() %}
+                        {% set col = colrow.split('-')[1] %}
+                        {% set row = colrow.split('-')[3] %}
+                    
+                            {% if col|int == data_value and row|int == study.number_of_rows-row_loop.index %}
+                            <td style="vertical-align: middle;" col-row="col-{{ loop.index0 }}-row-{{ study.number_of_rows-outer_loop.index }}">
+                                {% for value in values %}
+                                <form>
+                                    <div class="form-group">
+                                        <label>{{ data_values_labels[loop.index0].label }}</label>
+                                        <input type="number" col-row="col-{{ loop.index0 }}-row-{{ study.number_of_rows-outer_loop.index }}" class="data_values form-control form-control-sm" value="{{ value }}">    
+                                    </div>
+                                </form>
+                                {% endfor %}
+                            </td>
+                            {% endif %}
+                        {% endfor %}
+
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+           <tr>
+               <td style="border: none;">
+               </td>
+               <td style="border:none;">
+               </td>
+               
+               {% for col in range(0, study.number_of_columns) %}
+               {% if loop.index0==0 %}
+                   <td style="border:none; text-align:center;">
+                       Lowest {{ card_set_x.measure }}
+                   </td>
+               {% elif loop.index0 == study.number_of_columns-1 %}
+                   <td style="border:none; text-align:center;">
+                       Highest {{ card_set_x.measure }}
+                   </td>
+               {% else %}
+                   <td style="border:none;"></td>
+               {% endif %}
+               {% endfor %}
+           </tr>
+           <tr class="contains-content">
+               <td style="border: none;">
+               </td>
+               <td style="border: none;">
+               </td>
+               <td style="border: none;">
+               </td>
+               {% for col,cards in cards_x.items() %}
+               {% set outer_loop = loop %}
+                   <td style="border: none;" col="{{ outer_loop.index0 }}">
+                       <ul style="height:relative;"id="sortable1" class="data_cards_x list-group">
+                           {% for card in cards %}
+                                <li style="background-color: transparent;"class="list-group-item" id="{{ card.id }}">
+                                    <div class="card h-100" style="width: 7rem;">
+                                        {% if card.image %}
+                                            <img class="card-img-top" style="width: 100%; height: 6vw; object-fit: cover;" src="{{ url_for('static', filename='img/card_images/'~creator~'/'+card.image) }}" alt="Card Image">
+                                        {% endif %}
+                                        <div class="card-body">
+                                            {% if card.desc %}
+                                                <h5 class="card-title" data-toggle="tooltip" data-placement="top" title="{{ card.desc }}">{{ card.name }}</h5>       
+                                            {% else %}
+                                                <h5 class="card-title"> {{ card.name }}</h5>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </li>
+                           {% endfor%}
+                       </ul>
+                   </td>
+               {% endfor %}
+           </tr>
+        </table>
+    </div>
+
+{% endblock %}
