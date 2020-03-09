@@ -1,0 +1,254 @@
+{% extends "base.html" %}
+
+{% block head %}
+  <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+  <style>
+    #sortableY { list-style-type: none; margin-right: 10px; background: #eee; padding: 5px;}
+    #sortableY li {display: inline; text-align: center; margin: 5px; padding: 5px; font-size: 1.2em; width: 120px;}
+    #sortable1, #sortable2, #sortable3 { list-style-type: none; margin: 0; margin-right: 10px; background: #eee; padding: 5px; width: 10rem;}
+    #sortable1 li, #sortable2 li, #sortable3 li { text-align: center; margin: 5px; padding: 5px; font-size: 1.2em; width: 10rem; }
+    #sortableY td li {vertical-align: top; text-align: right;}
+    .empty {border:none;}
+    .contains-content {height:17rem;}
+  </style>
+  <script src="https://unpkg.com/@popperjs/core@2"></script>
+  <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+  <!-- <script type="text/javascript" src="{{ url_for('static', filename='js/study.js') }}"></script> -->
+  <script>
+    $(function () {
+        $('[data-toggle="tooltip"]').tooltip()
+    })
+    </script>
+  <script>
+      
+  var csrf_token = "{{ csrf_token() }}";
+
+$.ajaxSetup({
+    beforeSend: function(xhr, settings) {
+        if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
+            xhr.setRequestHeader("X-CSRFToken", csrf_token);
+        }
+    }
+});
+
+$( function() {
+$( "ul.droptrue1" ).sortable({
+  connectWith: "ul.droptrue1"
+});
+
+$( "ul.droptrue2" ).sortable({
+  connectWith: "ul.droptrue2"
+});
+
+$( "ul.dropfalse" ).sortable({
+  connectWith: "ul",
+  dropOnEmpty: false
+});
+
+$( "#sortable1, #sortable2, #sortable3" ).disableSelection();
+
+$("a#submit").click(function(){
+    var cards_x = {}
+    var cards_y = {}
+    var data_values = {}
+    
+    clicked = $("table tr").each(function() {
+        // cards_x = $(this).find(".data_cards_x li").toArray()
+        
+        $(this).find("td").each(function(){
+            var col_row = $(this).attr("col-row")
+            if(!!col_row){
+                data_values[col_row] = []
+            }
+            $(this).find(".data_values").each(function(){
+                data_values[col_row].push($(this).val());
+            });
+            var col = $(this).attr("col")
+            if(!!col){
+                cards_x[col] = []
+            }
+        });
+        
+        $(this).find(".data_cards_x li").each(function(){
+            var col = $(this).parentsUntil('td').parent().attr('col')
+            if(!!col){
+                cards_x[col].push($(this).attr("id"))
+            }
+        });
+        
+        var row = $(this).attr("row")
+        if(!!row){
+            cards_y[row] = []
+        }
+        $(this).find(".data_cards_y li").each(function(){
+            // cards_y.row.push($(this).attr("id"))
+            cards_y[row].push($(this).attr("id"))
+        });
+        // cards_y = $(this).find(".data_cards_y li").toArray()
+        // var data_cards_y_id = data_cards_y.attr("id")
+        // var data_cards_y_row = data_cards_y.attr("row")
+        // data_values = $(this).find(".data_values")
+        // var data_values_text = data_values.text()
+        // var data_values_id = data_values.attr("col-row")
+        // console.log(cards_y)
+        // console.log(cards_x)
+    });
+    var data = {}
+    data['cards_x'] = cards_x
+    data['cards_y'] = cards_y
+    data['data_values'] = data_values
+
+    $.ajax({
+        type : 'POST',
+        url : url1,
+        contentType: 'application/json;charset=UTF-8',
+        data: JSON.stringify(data),
+        dataType: "json",
+        success: function(response){
+            window.location.href = response['url'];
+        },
+        error : function (response) {
+            console.log(response);
+        }
+     
+    });
+});
+} );
+  </script>
+{% endblock %}
+
+{% block content %}
+<div class="table-responsive">
+ <table class="table table-bordered">
+    {% for row in range(0, study.number_of_rows) %}
+    {% set outer_loop = loop %}
+
+
+        <tr class="contains-content" row="{{ study.number_of_rows-outer_loop.index }}">
+            {% if loop.index0 == 0 %}
+            <td rowspan="{{ study.number_of_rows }}" style="border:none; vertical-align:middle">
+                    <ul style="padding:25px;"id="sortableY" class="droptrue2 data_cards_y list-group">
+                            {% for card in card_set_y.cards %}
+                                <li style="border:none; background-color: transparent;"class="list-group-item" id="{{ card.id }}">
+                                    <div class="card h-100" style="width: 7rem;">
+                                        {% if card.image %}
+                                            <img class="card-img-top" style="width: 100%; height: 6vw; object-fit: cover;" src="{{ url_for('static', filename='img/card_images/'~creator~'/'+card.image) }}" alt="Card Image">
+                                        {% endif %}
+                                        <div class="card-body">
+                                            {% if card.desc %}
+                                                <h5 class="card-title" data-toggle="tooltip" data-placement="top" title="{{ card.desc }}">{{ card.name }}</h5>       
+                                            {% else %}
+                                                <h5 class="card-title"> {{ card.name }}</h5>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </li>
+                            {% endfor %}
+                    </ul>
+                </td>
+            {% endif %}
+            <td style="border:none; vertical-align:middle">
+                <ul style="padding:25px;"id="sortableY" class="droptrue2 data_cards_y list-group list-group-horizontal">
+        
+                </ul>
+            </td>
+            {% if loop.index0 == 0%}
+                <td style="border:none; vertical-align:middle">
+                    <p>Highest {{ card_set_y.measure}} </p>
+                </td>
+            {% elif loop.index0 == study.number_of_rows-1 %}
+                <td style="border:none; vertical-align:middle">
+                    <p>Lowest {{ card_set_y.measure }}</p>
+                </td>
+            {% else %}
+                <td style="border:none;"></td>
+            {% endif%}
+            
+            
+            {% for column in range(0, study.number_of_columns) %}
+            
+                <td style="vertical-align: middle;" col-row="col-{{ loop.index0 }}-row-{{ study.number_of_rows-outer_loop.index }}">
+                  
+                    {% for label in study.data_values_labels %}
+                    <form>
+                        <div class="form-group">
+                            <label>{{ label.label }}</label>
+                            <input type="number" col-row="col-{{ loop.index0 }}-row-{{ study.number_of_rows-outer_loop.index }}" class="data_values form-control form-control-sm">    
+                        </div>
+                    </form>
+                    {% endfor %}
+            
+                </td>
+            {% endfor %}
+        </tr>
+    {% endfor %}
+    <tr>
+        <td style="border: none;">
+        </td>
+        <td style="border:none;">
+        </td>
+        <td style="border:none;">
+        </td>
+        {% for col in range(0, study.number_of_columns) %}
+        {% if loop.index0==0 %}
+            <td style="border:none; text-align:center;">
+                Lowest {{ card_set_x.measure }}
+            </td>
+        {% elif loop.index0 == study.number_of_columns-1 %}
+            <td style="border:none; text-align:center;">
+                Highest {{ card_set_x.measure }}
+            </td>
+        {% else %}
+            <td style="border:none;"></td>
+        {% endif %}
+        {% endfor %}
+    </tr>
+    <tr class="contains-content">
+        <td style="border: none;">
+        </td>
+        <td style="border: none;">
+        </td>
+        <td style="border: none;">
+        </td>
+        {% for col in range(0, study.number_of_columns) %}
+        {% set outer_loop = loop %}
+            <td style="border: none;" col="{{ outer_loop.index0 }}">
+                <ul style="height:relative;"id="sortable1" class="droptrue1 data_cards_x list-group">
+                    
+                </ul>
+            </td>
+        {% endfor %}
+    </tr>
+    <tr>
+        <td style="border: none;" colspan="{{ study.number_of_columns }}">
+            <ul style="height:relative;"id="sortable1" class="droptrue1 data_cards_x list-group list-group-horizontal">
+                {% for card in card_set_x.cards %}
+                    <li style="border:none; background-color: transparent;" class="list-group-item" id="{{ card.id }}">
+                        <div class="card h-100" style="width: 7rem;">
+                        {% if card.image %}
+                            <img class="card-img-top" style="width: 100%; height: 6vw; object-fit: cover;" src="{{ url_for('static', filename='img/card_images/'~creator~'/'+card.image) }}" alt="Card Image">
+                        {% endif %}        
+                            <div class="card-body">
+                                    {% if card.desc %}
+                                        <h5 class="card-title" data-toggle="tooltip" data-placement="top" title="{{ card.desc }}">{{ card.name }}</h5>       
+                                    {% else %}
+                                        <h5 class="card-title"> {{ card.name }}</h5>
+                                    {% endif %}
+                                </div>
+                        </div>
+                    </li>
+                {% endfor %}
+            </ul>
+        </td>
+    </tr>
+ </table>
+ </div>
+<!-- <a id="submit">Submit</a> -->
+ <a id="submit"><button type="button" class="btn btn-primary">Submit</button></a>
+ <script type="text/javascript">
+    var url1 = "http://localhost:5000"+"{{ url_for('study.study', study_id=study.id ) }}"
+</script>
+{% endblock %}
+
+

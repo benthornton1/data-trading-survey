@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block head %}
+    {{ js_resources|indent(4)|safe }}
+    {{ css_resources|indent(4)|safe }}
+    {{ plot_script_x|indent(4)|safe }}
+    {{ plot_script_y|indent(4)|safe }}
+{% endblock %}
+{% block content %}
+    {{ plot_div_x|indent(4)|safe }}
+    {{ plot_div_y|indent(4)|safe }}
+    {% block average_response %}
+    {% endblock %}
+{% endblock %}
