@@ -6,21 +6,9 @@ import pytest
 from _datetime import date, timedelta
 
 
-
-# @pytest.fixture
-# def app():
-#     app = create_app()
-#     return app
-
-class TestConfig(Config):
-    TESTING = True
-    DEBUG = True
-    WTF_CSRF_ENABLED = False
-    SQLALCHEMY_DATABASE_URI = 'sqlite://'
-
 @pytest.fixture
 def client():
-    flask_app = create_app(TestConfig)
+    flask_app = create_app()
  
     # Flask provides a way to test your application by exposing the Werkzeug test Client
     # and handling the context locals for you.

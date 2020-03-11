@@ -2,19 +2,10 @@
 
 {% block head %}
   <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
-  <style>
-    #sortableY { list-style-type: none; margin-right: 10px; background: #eee; padding: 5px;}
-    #sortableY li {display: inline; text-align: center; margin: 5px; padding: 5px; font-size: 1.2em; width: 120px;}
-    #sortable1, #sortable2, #sortable3 { list-style-type: none; margin: 0; margin-right: 10px; background: #eee; padding: 5px; width: 10rem;}
-    #sortable1 li, #sortable2 li, #sortable3 li { text-align: center; margin: 5px; padding: 5px; font-size: 1.2em; width: 10rem; }
-    #sortableY td li {vertical-align: top; text-align: right;}
-    .empty {border:none;}
-    .contains-content {height:17rem;}
-  </style>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/board.css') }}">
   <script src="https://unpkg.com/@popperjs/core@2"></script>
   <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
   <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-  <!-- <script type="text/javascript" src="{{ url_for('static', filename='js/study.js') }}"></script> -->
   <script>
     $(function () {
         $('[data-toggle="tooltip"]').tooltip()
@@ -244,10 +235,9 @@ $("a#submit").click(function(){
     </tr>
  </table>
  </div>
-<!-- <a id="submit">Submit</a> -->
  <a id="submit"><button type="button" class="btn btn-primary">Submit</button></a>
  <script type="text/javascript">
-    var url1 = "http://localhost:5000"+"{{ url_for('study.study', study_id=study.id ) }}"
+    var url1 = "{{ url_for('study.study', study_id=study.id ) }}"
 </script>
 {% endblock %}
 

@@ -3,12 +3,20 @@
 {% block content %}
 {% if current_studies %}
     <h3>Your Studies</h3>
-    <div class="row row-cols-1 row-cols-md-3">
+    <div class="row row-cols-1 row-cols-md-2">
     {% for study in current_studies %}
-        <div class="col mr-auto mb-3">
-            <div class="card" style="width: 18rem;">
+        <div class="col mb-4">
+            <div class="card">
+                {% if study.image %}
+                    <img style="width: 100%; height: 13vw; object-fit: cover;" class="card-img-top" src="{{ url_for('static', filename='img/study_images/'~creator~'/'+study.image) }}" alt="Study Image">
+                {% else %}
+                    <img style="width: 100%; height: 13vw; object-fit: cover;" src="{{url_for('static', filename='img/study_images/no_image.jpg')}}" class="card-img-top" alt="No Image">
+                {% endif %}
                 <div class="card-body">
                     <h5 class="card-title">{{ study.name }}</h5>
+                    {% if study.desc %}
+                        <p class="card-text">{{ study.desc }}</p>
+                    {% endif %}
                     <p class="card-text">You have until the end of <b>{{ study.end_date }}</b> to complete this
                         study.</p>
                     <a href="{{ url_for('study.study', study_id=study.id ) }}" class="btn btn-primary btn-sm">Start Study</a> 

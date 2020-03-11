@@ -6,7 +6,6 @@ import json
 f_age_groups = open("app/static/json/age_groups.json")
 data = json.load(f_age_groups)
 data_age_groups = [(k,v) for k, v in data.items()]
-print(data_age_groups)
 f_age_groups.close()
 
 f_countries = open("app/static/json/countries.json")

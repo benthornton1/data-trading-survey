@@ -1,27 +1,20 @@
 from flask import Flask
-from config import Config
+from config import ProductionConfig, DevelopmentConfig, TestConfig 
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_login import LoginManager
 from flask_apscheduler import APScheduler
+import atexit
 from flask_mail import Mail
 from flask_wtf.csrf import CSRFProtect
+import os
 
-# app=Flask(__name__)
-# app.config.from_object(Config)
-# db=SQLAlchemy(app)
-# migrate = Migrate(app, db)
-# login = LoginManager(app)
-# login.login_view = 'login'
-# scheduler = APScheduler()
-# scheduler.init_app(app)
-# scheduler.start()
-# mail = Mail(app)
-# csrf = CSRFProtect(app)
+from flask import Blueprint
 
+bp = Blueprint('base', __name__)
 
+from app import routes
 
-# from app import routes, models
 
 db = SQLAlchemy()
 migrate = Migrate()
@@ -31,20 +24,37 @@ scheduler = APScheduler()
 mail = Mail()
 csrf = CSRFProtect()
 
-def create_app(config_class=Config):
+def create_app():
     app = Flask(__name__)
-    app.config.from_object(config_class)
+    config = None
+    if os.environ['FLASK_ENV'] == 'production':
+        config = ProductionConfig()
+    elif os.environ['FLASK_ENV'] == 'development':
+        config = DevelopmentConfig()
+        print('THIS APP IS IN DEV CONFIGURATION. DO NOT USE IN PRODUCTION.')
+    elif os.environ['FLASK_ENV'] == 'test':
+        config = TestConfig()
+        print('THIS APP IS IN TEST CONFIGURATION. DO NOT USE IN PRODUCTION.')
+    elif config == None:
+        print('NO CONFIGURATION SET.')
+        
+    app.config.from_object(config)
     
     db.init_app(app)
     migrate.init_app(app, db)
     login.init_app(app)
     
-    # scheduler.api_enabled = True
-    # scheduler.init_app(app)
-    # scheduler.start()
-
+    from app.scheduler_tasks.check_studies import check_studies
+    
+    scheduler.api_enabled = True
+    scheduler.init_app(app)
+    scheduler.add_job(id='check_studies_job',trigger='cron',func=check_studies, hour='*', minute=5 ,args=[app])
+    scheduler.start()
+    
     mail.init_app(app)
     csrf.init_app(app)
+    
+    app.register_blueprint(bp, url_prefix='/')
     
     from app.auth import bp as auth_bp
     app.register_blueprint(auth_bp, url_prefix='/auth')
@@ -58,4 +68,6 @@ def create_app(config_class=Config):
     from app.responses import bp as responses_bp
     app.register_blueprint(responses_bp, url_prefix='/responses')
     
+    atexit.register(lambda: scheduler.shutdown())
+
     return app

@@ -1,4 +1,9 @@
 {% extends "base.html" %}
+
+{% block head %}
+    <script src="{{ url_for('static', filename='js/jquery.czMore.js') }}"></script>
+{% endblock %}
+
 {% block content %}
 <form id="card-set-form" action="" method="post" enctype="multipart/form-data" novalidate>
     {{ form.hidden_tag() }}
@@ -52,11 +57,7 @@
                                             {{ card.image(type="file", class="custom-file-input", id="inputGroupFile01") }}
                                             <!-- <input type="file" class="custom-file-input" id="inputGroupFile02"> -->
                                             <label class="custom-file-label" for="inputGroupFile01">
-                                                {% if card.image %}
-                                                    Image Uploaded
-                                                {% else %}
-                                                    Upload Image
-                                                {% endif %}
+                                                Upload Image
                                             </label>
                                         </div>
                                     </div>
@@ -73,14 +74,12 @@
                 </div>
                 {% endif %}
             {% endfor %}
-            <!-- </div> -->
         </div>
-        </div>
+    </div>
         
     <p>{{ form.submit(class="btn btn-primary") }}</p>
 </form>
-<script src="//code.jquery.com/jquery.min.js"></script>
-<script src="/static/js/jquery.czMore.js"></script>
+
 <script type="text/javascript">
     //One-to-many relationship plugin by Yasir O. Atabani. Copyrights Reserved.
     $("#czContainer").czMore({
@@ -92,7 +91,11 @@
     $(this).next('.custom-file-label').html(event.target.files[0].name);
 })
 </script>
-
+<script>
+        $(document).ready(function () {
+            bsCustomFileInput.init()
+        })
+</script>
     
 
 {% endblock %}
