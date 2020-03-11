@@ -1,40 +1,25 @@
-// from https://cmatskas.com/importing-csv-files-using-jquery-and-html5/
-
-$(document).ready(function() {
-
-    // The event listener for the file upload
-    document.getElementById('txtFileUpload').addEventListener('change', upload, false);
-
-    // Method that checks that the browser supports the HTML5 File API
-    function browserSupportFileUpload() {
-        var isCompatible = false;
-        if (window.File && window.FileReader && window.FileList && window.Blob) {
-        isCompatible = true;
-        }
-        return isCompatible;
-    }
-
-    // Method that reads and processes the selected file
-    function upload(evt) {
-        if (!browserSupportFileUpload()) {
-            alert('The File APIs are not fully supported in this browser!');
-            } else {
-                var data = null;
-                var file = evt.target.files[0];
+// adapted from https://www.aspsnippets.com/Articles/Read-CSV-File-in-jQuery-using-HTML5-File-API.aspx
+$(function () {
+    $("#upload").bind("click", function () {
+        var regex = /^([a-zA-Z0-9\s_\\.\-:])+(.csv|.txt)$/;
+        if (regex.test($("#fileUpload").val().toLowerCase())) {
+            if (typeof (FileReader) != "undefined") {
                 var reader = new FileReader();
-                reader.readAsText(file);
-                reader.onload = function(event) {
-                    var csvData = event.target.result;
-                    data = $.csv.toArrays(csvData);
-                    if (data && data.length > 0) {
-                    alert('Imported -' + data.length + '- rows successfully!');
-                    } else {
-                        alert('No data to import!');
+                reader.onload = function (e) {
+                    var emails = e.target.result.split("\n");
+                    for(var i = 0; i < emails.length; i++) {
+                        $("#btnPlus").click()
+                        var input = $(".recordset").last()
+                        email = emails[i].split(",")[0]
+                        input.find("input").val(email)
                     }
-                };
-                reader.onerror = function() {
-                    alert('Unable to read ' + file.fileName);
-                };
+                }            
+                reader.readAsText($("#fileUpload")[0].files[0]);
+            } else {
+                alert("This browser does not support HTML5.");
             }
+        } else {
+            alert("Please upload a valid CSV file.");
         }
     });
+});

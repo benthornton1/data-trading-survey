@@ -24,7 +24,6 @@ def study(study_id):
         
         
         data = request.get_json()
-        print(data)
         response = Response(user=current_user.id, study=study.id, cards_x = data.get('cards_x'), cards_y = data.get('cards_y'), data_values=data.get('data_values'))
         current_user.completed_study = True
         db.session.add(response)

@@ -1,7 +1,8 @@
 #!/bin/sh
 source venv/bin/activate
 while true; do
-    flask db upgrade
+    flask db migrate --directory=migrations_prod
+    flask db upgrade --directory=migrations_prod
     if [[ "$?" == "0" ]]; then
         break
     fi

@@ -10,26 +10,27 @@
         {% endblock %}
     </head>
     <body>
-        <nav class="navbar navbar-expand-sm navbar-dark bg-primary justify-content-end">
+        <nav class="navbar navbar-expand-sm navbar-dark bg-primary">
             {% if current_user.is_admin %}
                 <a class="navbar-brand" href="{{ url_for('admin.admin') }}">IoT Data Trading Admin Site</a>
             {% else %}
                 <a class="navbar-brand" href="{{ url_for('study.index') }}">IoT Data Trading</a>
             {% endif %}
-            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent">
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarText">
                 <span class="navbar-toggler-icon"></span>
             </button>
 
         
-                 
-            <div class="collapse navbar-collapse flex-grow-0 ml-auto" id="navbarSupportedContent">
-            
-                <ul class="navbar-nav text-right">
-                    <li class="nav-item active">
-                        {% if current_user.is_admin %}
+            <div class="collapse navbar-collapse" id="navbarText">
+                <ul class="navbar-nav mr-auto">
+                    {% if current_user.is_admin %}
+
+                        <li class="nav-item">
                             <a class="nav-link" href="{{ url_for('responses.index') }}">Responses</a>
-                        {% endif %}
-                    </li>
+                        </li>
+                    {% endif %}                          
+                </ul>
+                <ul class="nav navbar-nav navbar-right">
                     {% if current_user.is_authenticated %}
                         <span class="navbar-text">
                             Hello, {{ current_user }}
@@ -43,9 +44,7 @@
                         </li>
                     {% endif %}
                 </ul>
-            
             </div>
-            
         </nav>
 
         <div style="padding-top: 30px;" class="container">
@@ -62,9 +61,4 @@
         {% endblock %}
         </div>
     </body>
-    <script>
-            $(document).ready(function () {
-                bsCustomFileInput.init()
-            })
-      </script>
 </html>

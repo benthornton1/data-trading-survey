@@ -2,114 +2,32 @@
 
 {% block head %}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-csv/0.71/jquery.csv-0.71.min.js"></script>
-<!-- <script src="{{ url_for('static', filename='js/csv_upload.js') }}"></script> -->
-<script>
-    // adapted from https://www.aspsnippets.com/Articles/Read-CSV-File-in-jQuery-using-HTML5-File-API.aspx
-    $(function () {
-        $("#upload").bind("click", function () {
-            var regex = /^([a-zA-Z0-9\s_\\.\-:])+(.csv|.txt)$/;
-            if (regex.test($("#fileUpload").val().toLowerCase())) {
-                if (typeof (FileReader) != "undefined") {
-                    var reader = new FileReader();
-                    reader.onload = function (e) {
-                        // var table = $("<table />");
-                        var emails = e.target.result.split("\n");
-                        for(var i = 0; i < emails.length; i++) {
-                            $("#btnPlus").click()
-                            var input = $(".recordset").last()
-                            email = emails[i].split(",")[0]
-                            input.find("input").val(email)
-                        }
-                        // for (var i = 0; i < rows.length; i++) {
-                        //     var row = $("<tr />");
-                        //     var cells = rows[i].split(",");
-                        //     if (cells.length > 1) {
-                        //         for (var j = 0; j < cells.length; j++) {
-                        //             var cell = $("<td />");
-                        //             cell.html(cells[j]);
-                        //             row.append(cell);
-                        //         }
-                        //         table.append(row);
-                        //     }
-                        }
-                        // $("#dvCSV").html('');
-                        // $("#dvCSV").append(table);
-                    
-                
-                    reader.readAsText($("#fileUpload")[0].files[0]);
-                } else {
-                    alert("This browser does not support HTML5.");
-                }
-            } else {
-                alert("Please upload a valid CSV file.");
-            }
-        });
-    });
-
-</script>
+<script src="{{ url_for('static', filename='js/csv_upload.js') }}"></script>
+<script src="{{ url_for('static', filename='js/jquery.czMore.js') }}"></script>
 {% endblock %}
-{% block content %}
-<!-- <div class="row">
 
-    <div class="col-sm">
-            <h3>User Group Form</h3>
-        <form id="user-group-form" action="" method="post" novalidate>
-                {{ form.hidden_tag() }}
-                <div class="form-group">
-                    <label>{{ form.name.label }}</label>
-                    {{ form.name(class="form-control") }}
-                    {% for error in form.name.errors %}
-                        <span style="color: red;">[{{ error }}]</span>
-                    {% endfor %}
-                </div>
-                    <div id="czContainer">
-                        {% for user in form.users %}
-                            {% if loop.index == 1 %}
-                            <div id="first">
-                            {% endif %}
-                            <div class="recordset">
-                                    <div class="item-content">
-                                        <div class="form-group">
-                                            <label>{{ user.email.label }}</label>
-                                            {{ user.email(class="form-control") }}
-                                            {% for error in user.errors %}
-                                                <span style="color: red;">[{{ error }}]</span>
-                                            {% endfor %}
-                                        </div>
-                                    </div>
-                                </div>
-                            {% if loop.index == 1 %}
-                            </div>
-                            {% endif %}
-                        {% endfor %}
+{% block content %}
+<h3> Upload File</h3>
+<p>Upload a .csv file containing emails without quotations where each email
+    is sperated by a comma and a new line such as the example below and press "Upload" or fill out the form below manually.</p>
+    <div class="row">
+        <div class="col-md-3">
+            <div class="mb-3">
+                <div class="card">
+                    <div class="card-body">
+                        <code>
+                            joe@joe.com,&#13;
+                            harry@harry.com,&#13;
+                            jane@jane.com&#13;
+                        </code>
                     </div>
-                <p>{{ form.submit(class="btn btn-primary") }}</p>
-            </form>
-        </div>
-        <div class="col-sm">
-            <h3> Upload File</h3>
-            <p>Please upload a csv files containing emails without quotations where each email
-                is sperated by a comma and a new line</p>
-            <div class="row">
-                <div class="col">
-                    <div class="custom-file">
-                        <input type="file" class="custom-file-input" id="fileUpload">
-                        <label class="custom-file-label" for="fileUpload">Choose CSV file</label>
-                    </div>
-                </div>
-                <div class="col">
-                    <button class="btn btn-primary" type="submit" id="upload">Upload</button>
                 </div>
             </div>
+        </div>
     </div>
-</div> -->
-
-<h3> Upload File</h3>
-<p>Upload a csv files containing emails without quotations where each email
-    is sperated by a comma and a new line and press "Upload" or fill out the form below manually.</p>
     <div class="form-row">
         <div class="form-group col-md-3">
-        <div class="input-group mb-3">
+        <div style="vertical-align: middle;" class="input-group mb-3">
             <div class="custom-file">
                 <input type="file" class="custom-file-input" id="fileUpload">
                 <label class="custom-file-label" for="fileUpload">Choose CSV file</label>
@@ -119,8 +37,8 @@
         <div class="form-group col-md-3">
             <button class="btn btn-primary" type="submit" id="upload">Upload</button>
         </div>
+    
     </div>
-
     <hr>
 
     <form id="user-group-form" action="" method="post" novalidate>
@@ -156,14 +74,16 @@
             <p>{{ form.submit(class="btn btn-primary") }}</p>
         </form>
 
-
-    <script src="//code.jquery.com/jquery.min.js"></script>
-    <script src="/static/js/jquery.czMore.js"></script>
     <script type="text/javascript">
         //One-to-many relationship plugin by Yasir O. Atabani. Copyrights Reserved.
         $("#czContainer").czMore({
             max: 500,
             min: 1
         });
+    </script>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            bsCustomFileInput.init()
+        })
     </script>
 {% endblock %}

@@ -67,6 +67,7 @@ class Study(db.Model):
     creator = db.Column('User', db.ForeignKey('user.id'))
     start_date = db.Column(db.Date)
     end_date = db.Column(db.Date)
+    mail_sent = db.Column(db.Boolean)
     
     def __repr__(self):
         return str(self.name)

@@ -5,7 +5,7 @@ from flask_login import current_user, login_user, logout_user, login_required
 from app.models import Card, CardSet, DataValuesLabels, Study, User, UserGroup
 from werkzeug.utils import secure_filename
 from functools import wraps
-from app.scheduler import start_study_job
+# from app.scheduler import start_study_job
 import os
 import mimetypes
 from werkzeug.datastructures import FileStorage, Headers
@@ -25,18 +25,21 @@ def admin():
     studies = Study.query.filter_by(creator=current_user.id).all()
     for study in studies:
         if study.name == None:
+            studies.remove(study)
             db.session.delete(study)
             db.session.commit()
 
     card_sets = CardSet.query.filter_by(creator=current_user.id).all()
     for card_set in card_sets:
         if card_set.name == None:
+            card_sets.remove(card_set)
             db.session.delete(card_set)
             db.session.commit()
 
     user_groups = UserGroup.query.filter_by(creator_id=current_user.id).all()
     for user_group in user_groups:
         if user_group.name == None:
+            user_groups.remove(user_group)
             db.session.delete(user_group)
             db.session.commit()
     
@@ -94,7 +97,6 @@ def edit_study(study_id):
             flash('Study Created/ Updated Succesfully')
             return redirect(url_for('admin.admin'))
         except Exception as error:
-            print(str(error))
             db.session.rollback()
             flash('There was a problem creating your study')
         
@@ -110,6 +112,9 @@ def edit_study(study_id):
             form_label.data = label.label
         form.start_date.data = study.start_date
         form.end_date.data = study.end_date
+        
+        if form.name.data is not None:
+            form.submit.label.text = 'Update'
         
     return render_template('admin/edit_study.html', form=form, study=study)
 
@@ -169,8 +174,10 @@ def card_set(card_set_id):
                 form.cards.append_entry(dict(card_name=card.name, desc=card.desc, image=image))
             else:
                 form.cards.append_entry(dict(card_name=card.name, desc='', image=image))
-        for card in form.cards:
-            print(card.desc)
+
+    
+        if form.card_set_name.data is not None:
+                form.submit.label.text = 'Update'
         
         
     return render_template('admin/card_set.html', form=form)
@@ -196,10 +203,8 @@ def user_group(user_group_id):
         
         # Find participants who have been deleted from the user group form and delete them.
         if user_group.users is not None:
-            for user in user_group.users: 
-                
+            for user in user_group.users:                
                 emails = [val['email'] for val in form.users.data]
-                
                 if user.email not in emails:
                     db.session.delete(user)
         
@@ -226,6 +231,8 @@ def user_group(user_group_id):
         for user in user_group.users:
             form.users.append_entry(dict(email=user.email))
 
+        if form.name.data is not None:
+            form.submit.label.text = 'Update'
         
     return render_template('admin/user_group.html', form=form)
 
@@ -270,6 +277,7 @@ def new_card_set():
         
         return redirect(url_for('admin.card_set', card_set_id=card_set.id))
     except Exception as error:
+        db.session.rollback()
         flash('There was a problem creating a new Card Set.')
         return redirect(url_for('admin.admin'))
 
@@ -294,9 +302,10 @@ def delete_user_group(user_group_id):
         obj = UserGroup.query.filter_by(id=user_group_id).first_or_404()
         db.session.delete(obj)
         db.session.commit()
-        return redirect(url_for('admin.admin'))
         flash('User Group {} succesfully deleted.'.format(obj.name))
+        return redirect(url_for('admin.admin'))
     except:
+        db.session.rollback()
         flash('There was a problem deleting this User Group.')
         return redirect(url_for('admin.admin'))
     
@@ -311,5 +320,6 @@ def delete_card_set(card_set_id):
         flash('Card Set {} succesfully deleted.'.format(obj.name))
         return redirect(url_for('admin.admin'))
     except:
+        db.session.rollback()
         flash('There was a problem deleting this Card Set.')
         return redirect(url_for('admin.admin'))
