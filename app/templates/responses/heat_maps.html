@@ -1,0 +1,39 @@
+{% extends "responses/responses_base.html" %}
+
+{% block head %}
+{{ super() }}
+<script src="{{ url_for('static', filename='js/heatmaps.js') }}"></script>
+{% endblock %}
+
+{% block content %}
+{{super()}}
+<h3>Heatmaps</h3>
+<form>
+    <div class="row">
+        <div class="col md-3">
+            <label>{{ card_set_x.name }}</label>
+            <select id="card-x" class="form-control">
+                {% for card_x in card_set_x.cards %}
+                    <option card_id="{{ card_x.id }}">{{ card_x.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col md-3">
+            <label>{{ card_set_y.name }}</label>
+            <select id="card-y" class="form-control">
+                {% for card_y in card_set_y.cards %}
+                    <option card_id="{{ card_y.id }}">{{ card_y.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col">
+            <label></label>
+            <a id="add-heatmap" class="btn btn-primary" url="{{ url_for('responses.heat_maps', study_id=study.id) }}" csrf_token="{{ csrf_token() }}" type="one">Add</a>
+        </div>
+    </div>
+</form>
+
+<div id="heatmap-grid" class="row">
+    
+</div>
+{% endblock %}

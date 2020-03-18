@@ -48,7 +48,7 @@ def create_app():
     
     scheduler.api_enabled = True
     scheduler.init_app(app)
-    scheduler.add_job(id='check_studies_job',trigger='cron',func=check_studies, hour='*', minute=5 ,args=[app])
+    # scheduler.add_job(id='check_studies_job',trigger='cron',func=check_studies, hour='*', minute=5 ,args=[app])
     scheduler.start()
     
     mail.init_app(app)

@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block head %}
+<link rel="stylesheet" href="http://cdn.bokeh.org/bokeh/release/bokeh-1.4.0.min.css" type="text/css" />
+<script type="text/javascript" src="http://cdn.bokeh.org/bokeh/release/bokeh-1.4.0.min.js"></script>
+<script src="{{ url_for('static', filename='js/active_link.js') }}"></script>
+{% endblock %}
+
+{% block content %}
+    <nav class="nav">
+        <a class="nav-link active" href="{{ url_for('responses.general', study_id=study.id) }}">General</a>
+        <a class="nav-link" href="{{url_for('responses.heat_maps', study_id=study.id) }}">Heat Maps</a>
+        <a class="nav-link" href="{{url_for('responses.compare_responses', study_id=study.id) }}">Compare Responses</a>
+        <a class="nav-link" href="{{url_for('responses.average_response', study_id=study.id) }}">Average Response</a>
+    </nav>
+{% endblock %}

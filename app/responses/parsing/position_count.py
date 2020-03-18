@@ -3,6 +3,7 @@ from bokeh.embed import components
 from bokeh.models import ColumnDataSource, FactorRange
 from bokeh.models.tickers import SingleIntervalTicker
 from app.models import Card
+import pdb
 
 def get_card_x_responses(study, responses):
     

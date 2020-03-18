@@ -24,12 +24,13 @@ $.ajaxSetup({
 });
 
 $( function() {
-$( "ul.droptrue1" ).sortable({
-  connectWith: "ul.droptrue1"
+$( ".droptrue1" ).sortable({
+  connectWith: ".droptrue1",
+  forcePlaceholderSize: true
 });
 
-$( "ul.droptrue2" ).sortable({
-  connectWith: "ul.droptrue2"
+$( ".droptrue2" ).sortable({
+  connectWith: ".droptrue2"
 });
 
 $( "ul.dropfalse" ).sortable({
@@ -37,7 +38,7 @@ $( "ul.dropfalse" ).sortable({
   dropOnEmpty: false
 });
 
-$( "#sortable1, #sortable2, #sortable3" ).disableSelection();
+$( "#sortable-x #sortable-y" ).disableSelection();
 
 $("a#submit").click(function(){
     var cards_x = {}
@@ -76,14 +77,7 @@ $("a#submit").click(function(){
             // cards_y.row.push($(this).attr("id"))
             cards_y[row].push($(this).attr("id"))
         });
-        // cards_y = $(this).find(".data_cards_y li").toArray()
-        // var data_cards_y_id = data_cards_y.attr("id")
-        // var data_cards_y_row = data_cards_y.attr("row")
-        // data_values = $(this).find(".data_values")
-        // var data_values_text = data_values.text()
-        // var data_values_id = data_values.attr("col-row")
-        // console.log(cards_y)
-        // console.log(cards_x)
+
     });
     var data = {}
     data['cards_x'] = cards_x
@@ -110,40 +104,23 @@ $("a#submit").click(function(){
 {% endblock %}
 
 {% block content %}
-<div class="table-responsive">
+<div class="row">
+    
+<div class="col">
+<div id="card-table" class="table-responsive">
  <table class="table table-bordered">
     {% for row in range(0, study.number_of_rows) %}
     {% set outer_loop = loop %}
 
 
-        <tr class="contains-content" row="{{ study.number_of_rows-outer_loop.index }}">
-            {% if loop.index0 == 0 %}
-            <td rowspan="{{ study.number_of_rows }}" style="border:none; vertical-align:middle">
-                    <ul style="padding:25px;"id="sortableY" class="droptrue2 data_cards_y list-group">
-                            {% for card in card_set_y.cards %}
-                                <li style="border:none; background-color: transparent;"class="list-group-item" id="{{ card.id }}">
-                                    <div class="card h-100" style="width: 7rem;">
-                                        {% if card.image %}
-                                            <img class="card-img-top" style="width: 100%; height: 6vw; object-fit: cover;" src="{{ url_for('static', filename='img/card_images/'~creator~'/'+card.image) }}" alt="Card Image">
-                                        {% endif %}
-                                        <div class="card-body">
-                                            {% if card.desc %}
-                                                <h5 class="card-title" data-toggle="tooltip" data-placement="top" title="{{ card.desc }}">{{ card.name }}</h5>       
-                                            {% else %}
-                                                <h5 class="card-title"> {{ card.name }}</h5>
-                                            {% endif %}
-                                        </div>
-                                    </div>
-                                </li>
-                            {% endfor %}
-                    </ul>
-                </td>
-            {% endif %}
-            <td style="border:none; vertical-align:middle">
-                <ul style="padding:25px;"id="sortableY" class="droptrue2 data_cards_y list-group list-group-horizontal">
+        <tr row="{{ study.number_of_rows-outer_loop.index }}">
         
-                </ul>
+            <td id="sortable-y">
+                <!-- <div id="sortable-y-div" class="droptrue2 d-flex flex-nowrap">
+                
+                </div> -->
             </td>
+        
             {% if loop.index0 == 0%}
                 <td style="border:none; vertical-align:middle">
                     <p>Highest {{ card_set_y.measure}} </p>
@@ -179,8 +156,7 @@ $("a#submit").click(function(){
         </td>
         <td style="border:none;">
         </td>
-        <td style="border:none;">
-        </td>
+        
         {% for col in range(0, study.number_of_columns) %}
         {% if loop.index0==0 %}
             <td style="border:none; text-align:center;">
@@ -195,46 +171,73 @@ $("a#submit").click(function(){
         {% endif %}
         {% endfor %}
     </tr>
-    <tr class="contains-content">
+    <tr>
         <td style="border: none;">
         </td>
         <td style="border: none;">
         </td>
-        <td style="border: none;">
-        </td>
+        
         {% for col in range(0, study.number_of_columns) %}
         {% set outer_loop = loop %}
-            <td style="border: none;" col="{{ outer_loop.index0 }}">
-                <ul style="height:relative;"id="sortable1" class="droptrue1 data_cards_x list-group">
+            <td id="sortable-x" col="{{ outer_loop.index0 }}" class="droptrue1">
+                    <!-- <div id="sortable-x-div" class="d-flex flex-wrap flex-column">
                     
-                </ul>
+                    </div> -->
             </td>
         {% endfor %}
     </tr>
-    <tr>
-        <td style="border: none;" colspan="{{ study.number_of_columns }}">
-            <ul style="height:relative;"id="sortable1" class="droptrue1 data_cards_x list-group list-group-horizontal">
-                {% for card in card_set_x.cards %}
-                    <li style="border:none; background-color: transparent;" class="list-group-item" id="{{ card.id }}">
-                        <div class="card h-100" style="width: 7rem;">
-                        {% if card.image %}
-                            <img class="card-img-top" style="width: 100%; height: 6vw; object-fit: cover;" src="{{ url_for('static', filename='img/card_images/'~creator~'/'+card.image) }}" alt="Card Image">
-                        {% endif %}        
-                            <div class="card-body">
-                                    {% if card.desc %}
-                                        <h5 class="card-title" data-toggle="tooltip" data-placement="top" title="{{ card.desc }}">{{ card.name }}</h5>       
-                                    {% else %}
-                                        <h5 class="card-title"> {{ card.name }}</h5>
-                                    {% endif %}
-                                </div>
-                        </div>
-                    </li>
-                {% endfor %}
-            </ul>
-        </td>
-    </tr>
+    
  </table>
  </div>
+ </div>
+ </div>
+ <div class="row">
+    <div class="col">
+        <h3>Cards X</h3>
+        <div id="sortable-container" class="droptrue1 d-flex flex-wrap">
+            {% for card in card_set_x.cards %}
+            <div>
+                    <div class="card" style="width: 7rem;">
+                    {% if card.image %}
+                        <img class="card-img-top" style="width: 100%; height: 6vw; object-fit: cover;" src="{{ url_for('static', filename='img/card_images/'~creator~'/'+card.image) }}" alt="Card Image">
+                    {% endif %}        
+                        <div class="card-body">
+                            {% if card.desc %}
+                                <p class="card-text" data-toggle="tooltip" data-placement="top" title="{{ card.desc }}">{{ card.name }}</p>       
+                            {% else %}
+                                <p class="card-text"> {{ card.name }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col">
+        <h3>Cards Y</h3>
+        <div id="sortable-container" class="droptrue2 d-flex flex-wrap">
+            {% for card in card_set_y.cards %}
+            <div>
+                <div class="card" style="width: 7rem;">
+                    {% if card.image %}
+                        <img class="card-img-top" style="width: 100%; height: 6vw; object-fit: cover;" src="{{ url_for('static', filename='img/card_images/'~creator~'/'+card.image) }}" alt="Card Image">
+                    {% endif %}
+                    <div class="card-body">
+                        {% if card.desc %}
+                            <p class="card-text" data-toggle="tooltip" data-placement="top" title="{{ card.desc }}">{{ card.name }}</p>       
+                        {% else %}
+                            <p class="card-text">{{ card.name }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>  
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
  <a id="submit"><button type="button" class="btn btn-primary">Submit</button></a>
  <script type="text/javascript">
     var url1 = "{{ url_for('study.study', study_id=study.id ) }}"
