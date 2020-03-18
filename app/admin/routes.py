@@ -2,7 +2,7 @@ from app import db
 from flask import render_template,flash, redirect, url_for, request, current_app
 from app.admin.forms import  StudyForm, CardSetForm, UserGroupForm
 from flask_login import current_user, login_user, logout_user, login_required
-from app.models import Card, CardSet, DataValuesLabels, Study, User, UserGroup
+from app.models import Card, CardSet, DataValuesLabels, HeatMap, Study, User, UserGroup
 from werkzeug.utils import secure_filename
 from functools import wraps
 # from app.scheduler import start_study_job
@@ -11,7 +11,7 @@ import mimetypes
 from werkzeug.datastructures import FileStorage, Headers
 from app.admin import bp
 from app.admin.decorators import admin_required
-
+from app.responses.parsing import find_combinations
 from datetime import date
 import random
 import string
@@ -63,7 +63,11 @@ def edit_study(study_id):
         study.name = form.name.data
         study.desc = form.desc.data
         
-        
+        old_heat_maps = HeatMap.query.filter_by(study=study_id).all()
+        for old_heat_map in old_heat_maps:
+            db.session.delete(old_heat_map)
+        db.session.commit()
+                        
         if form.image.data is not None:
             file = form.image.data
             file_name = secure_filename(file.filename)
@@ -86,7 +90,8 @@ def edit_study(study_id):
         for label in form.data_values_labels.data:
             if label is not '':
                 labels.append(DataValuesLabels(label=label, study_id=study.id))
-        study.data_values_labels = labels    
+        
+        study.data_values_labels = labels
         study.number_of_columns = form.number_of_columns.data
         study.number_of_rows = form.number_of_rows.data
         study.user_group_id = form.user_group.data.id
@@ -95,11 +100,11 @@ def edit_study(study_id):
         try:
             db.session.commit()
             flash('Study Created/ Updated Succesfully')
+            find_combinations(study)
             return redirect(url_for('admin.admin'))
         except Exception as error:
             db.session.rollback()
             flash('There was a problem creating your study')
-        
         
     elif request.method=='GET' and study.card_sets != []:
         

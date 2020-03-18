@@ -2,10 +2,12 @@ from app import db
 from flask import render_template,flash, redirect, url_for, request
 from app.study.forms import UserInfoForm
 from flask_login import current_user, login_required
-from app.models import CardSet, Response, Study
+from app.models import CardSet, Response, Study, HeatMap
 from datetime import date
 from app.study import bp
-
+import pdb
+import itertools
+from app.responses.parsing.update_heatmaps import update_heatmaps, normalise_data_values
 
 @bp.route('/<study_id>', methods=['GET', 'POST'])
 @login_required
@@ -24,10 +26,16 @@ def study(study_id):
         
         
         data = request.get_json()
+        cards_x = data.get('cards_x')
+        cards_y = data.get('cards_y')
+        data_values=data.get('data_values')
         response = Response(user=current_user.id, study=study.id, cards_x = data.get('cards_x'), cards_y = data.get('cards_y'), data_values=data.get('data_values'))
         current_user.completed_study = True
         db.session.add(response)
+        update_heatmaps(cards_x=data.get('cards_x'), cards_y=data.get('cards_y'),response=response,study=study)
+    
         db.session.commit()
+
         return dict(url=url_for('study.index'))
     
     
@@ -78,7 +86,6 @@ def user_info():
             form.occupation.data = current_user.occupation
             form.latest_country.data = current_user.latest_country
             form.income.data = current_user.income
-            form.income.data
         else:
             return render_template('study/user_info.html', form=form)
 

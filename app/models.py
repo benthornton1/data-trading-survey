@@ -92,7 +92,6 @@ class Card(db.Model):
     name = db.Column(db.String(16))
     desc = db.Column(db.String(500))
     image = db.Column(db.String(100))
-
     creator = db.Column(db.Integer, db.ForeignKey('user.id'))
 
     def __repr__(self):
@@ -106,6 +105,19 @@ class Response(db.Model):
     cards_x = db.Column(db.JSON)
     cards_y = db.Column(db.JSON)
     data_values = db.Column(db.JSON)
+    
+class HeatMap(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    card_x_id = db.Column(db.Integer, db.ForeignKey('card.id'))
+    card_x = db.relationship(Card, foreign_keys=card_x_id, backref='heatmaps_x')
+    card_y_id = db.Column(db.Integer, db.ForeignKey('card.id'))
+    card_y = db.relationship(Card, foreign_keys=card_y_id, backref='heatmaps_y')
+
+    study = db.Column(db.Integer, db.ForeignKey('study.id'))
+    creator = db.Column(db.Integer, db.ForeignKey('user.id'))
+    values = db.Column(db.JSON)
+    data_value_label = db.Column(db.Integer, db.ForeignKey('data_values_labels.id'))
+    random = db.Column(db.String(10))
     
 @login.user_loader
 def load_user(id):

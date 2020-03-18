@@ -26,6 +26,7 @@ class DevelopmentConfig(DefaultConfig):
     TESTING = True
     WTF_CSRF_ENABLED = True
     USE_RELOADER = False
+    SQLALCHEMY_ECHO=True
 
 
 class TestConfig(DefaultConfig):

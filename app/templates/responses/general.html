@@ -1,0 +1,24 @@
+{% extends "responses_base.html" %}
+
+
+{% block head %}
+    {{ super() }}
+    {{ plot_script_x|indent(4)|safe }}
+    {{ plot_script_y|indent(4)|safe }}
+    {% for script_heatmap in heatmap_plots %}
+        {{ script_heatmap[0]|indent(4)|safe }}
+    {% endfor %}
+{% endblock %}
+{% block content %}
+    <div class="row">
+        <div class="col-xs">
+            {{ plot_div_x|indent(4)|safe }}
+        </div>
+        <div class="col-xs">
+            {{ plot_div_y|indent(4)|safe }}
+        </div>
+    </div>
+    
+    {% block average_response %}
+    {% endblock %}
+{% endblock %}

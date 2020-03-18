@@ -1,15 +1,18 @@
 from app.responses import bp
+from app import db
+from flask import request
 from app.admin.decorators import admin_required
 from flask_login import current_user
-from app.models import Card, Response, Study
+from app.models import Card, Response, Study, HeatMap
 from flask.templating import render_template
-from bokeh.plotting import figure, output_file, show
-from bokeh.embed import components
-from bokeh.resources import INLINE
-
-from app.responses.parsing.average_response import average_response
+from sqlalchemy import desc
+from app.responses.parsing.average_response import average_response as avg
 from app.responses.parsing.position_count import get_card_x_responses, get_card_y_responses
+from app.responses.parsing.add_heatmaps import CreateAllHeatMaps, CreateOneHeatMap
 from statistics import mean
+import pdb
+from bokeh.models.formatters import FuncTickFormatter
+from bokeh.models.tickers import FixedTicker
 
 
 @bp.route('/')
@@ -26,24 +29,21 @@ def response(study_id):
 
     script_x, div_x = get_card_x_responses(study, responses)
     script_y, div_y = get_card_y_responses(study, responses)
-    avg_response = average_response(study, responses)
+    avg_response = avg(study, responses)
     cards_y = avg_response.get('cards_y')
     cards_x = avg_response.get('cards_x')
     data_values = avg_response.get('data_values')
     card_set_x = study.card_sets[0]
     card_set_y = study.card_sets[1]
     data_values_labels = study.data_values_labels
-    js_resources = INLINE.render_js()
-    css_resources = INLINE.render_css()
     
+   
     return render_template(
         'responses/average_response.html',
         plot_script_x=script_x,
         plot_div_x=div_x,
         plot_script_y=script_y,
         plot_div_y=div_y,
-        js_resources=js_resources,
-        css_resources=css_resources,
         study=study,
         creator=current_user.id,
         cards_x = cards_x,
@@ -54,6 +54,36 @@ def response(study_id):
         card_set_y = card_set_y
     )
 
+@bp.route('/<int:study_id>')
+def general(study_id):
+    return "General"
 
+@bp.route('/heat_maps/<int:study_id>', methods=['GET','POST'])
+def heat_maps(study_id):
+    study = Study.query.filter_by(id=study_id).first_or_404()
+    if request.method =='POST':
+        data = request.get_json()
+        type = data.get('type')
+        plots = []
+        if type == 'one':
+            card_x_id = data.get('card_x_id')
+            card_y_id = data.get('card_y_id')
+            hm = CreateOneHeatMap()
+            plots = hm.add(card_x_id=card_x_id, card_y_id=card_y_id, study=study)
+        else:
+            hm = CreateAllHeatMaps()
+            plots = hm.add(study=study)
+            
+        plots_dict = dict(plots)
+        
+        return dict(plots=plots_dict)
 
-# {'cards_x': {'0': ['1'], '1': [], '2': [], '3': []}, 'cards_y': {'0': [], '1': [], '2': [], '3': ['2']}, 'data_values': {'col-0-row-3': ['12'], 'col-1-row-3': [''], 'col-2-row-3': [''], 'col-3-row-3': [''], 'col-0-row-2': [''], 'col-1-row-2': [''], 'col-2-row-2': [''], 'col-3-row-2': [''], 'col-0-row-1': [''], 'col-1-row-1': [''], 'col-2-row-1': [''], 'col-3-row-1': [''], 'col-0-row-0': [''], 'col-1-row-0': [''], 'col-2-row-0': [''], 'col-3-row-0': ['']}}
+    return render_template('responses/heat_maps.html', study=study, card_set_x=study.card_sets[0], card_set_y=study.card_sets[1])
+
+@bp.route('/compare/<int:study_id>')
+def compare_responses(study_id):
+    return "Compare"  
+    
+@bp.route('/average/<int:study_id>')
+def average_response(study_id):
+    return "Average"

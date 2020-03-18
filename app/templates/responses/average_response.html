@@ -1,10 +1,11 @@
-{% extends "responses/response.html" %}
+{% extends "responses/responses_base.html" %}
 
 {% block head %}
 {{ super() }}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/board.css') }}">
 {% endblock %}
-{% block average_response %}
+{% block content %}
+{{ super() }}
 <div class="table-responsive">
         <table class="table table-bordered">
             {% for row in cards_y %}
