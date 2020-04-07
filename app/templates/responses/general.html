@@ -1,4 +1,4 @@
-{% extends "responses_base.html" %}
+{% extends "responses/responses_base.html" %}
 
 
 {% block head %}
@@ -10,15 +10,25 @@
     {% endfor %}
 {% endblock %}
 {% block content %}
+<h3>General</h3>
+    <div class="row">
+        <div class="col text-center">
+            <h4>{{ responses|length }} Responses</h4>
+        </div>
+        <div class="col text-center">
+            <h4>{{ study.heat_maps|length }} Heat Maps</h4>
+        </div>
+    </div>
     <div class="row">
         <div class="col-xs">
             {{ plot_div_x|indent(4)|safe }}
         </div>
+    </div>
+    <div class="row">
         <div class="col-xs">
             {{ plot_div_y|indent(4)|safe }}
         </div>
-    </div>
+    </div>    
+
     
-    {% block average_response %}
-    {% endblock %}
 {% endblock %}

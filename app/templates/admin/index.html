@@ -1,0 +1,243 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>Admin Page</h1>
+    <h3>Studies</h3>
+    <a class="badge badge-success my-3" href="{{ url_for('admin.new_study') }}">Create Study</a>
+    <div class="row">
+        {% if studies|length == 0 %}
+            <div class="col-sm-6">
+                <p>You haven't created any Studies yet :(</p>
+            </div>
+        {% else %}
+        {% for study in studies %}
+        
+            <div class="col-sm-6">
+              <div style="margin-bottom: 20px;" class="card">
+                {% if study.image %}
+                    <img style="width: 100%; height: 13vw; object-fit: cover;" class="card-img-top" src="{{ url_for('static', filename='img/study_images/'+study.creator.id|string+'/'+study.image) }}" alt="Study Image">
+                {% else %}
+                    <img style="width: 100%; height: 13vw; object-fit: cover;" src="{{url_for('static', filename='img/study_images/no_image.jpg')}}" class="card-img-top" alt="No Image">
+                {% endif %}
+                <div class="card-body">
+
+                  <h5 class="card-title">{{ study.name }}</h5>
+                  <h6 class="card-subtitle mb-2 text-muted">{{ study.start_date }} to {{ study.end_date }}</h6>
+                  {% if study.description %}
+                    <p class="card-text">{{ study.description }}</p>
+                  {% endif %}
+                  <p>  
+                        <a class="text-primary" data-toggle="collapse" data-target="#collapseExample{{study.id}}" aria-expanded="false" aria-controls="collapseExample{{study.id}}">
+                          More Info
+                        </a>
+                    </p>
+                    <div style="margin-bottom: 10px;" class="collapse" id="collapseExample{{study.id}}">
+                        <div class="card card-body">
+                            <table class="table table-sm">
+                                <tbody>
+                                    <tr>
+                                        <th scope="row">Card Sets</th>
+                                        <td>{{ study.card_set_x.name }}</td>
+                                        <td>{{ study.card_set_y.name }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">Data Values</th>
+                                        <td>{{ study.data_values }}</td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">Number of Columns</th>
+                                        <td>{{ study.number_of_columns }}</td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">Number of Rows</th>
+                                        <td>{{ study.number_of_rows }}</td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">User Group</th>
+                                        <td>{{ study.user_group.name }}</td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">Mail Sent?</th>
+                                        {% if study.mail_sent == True %}
+                                            <td>Yes</td>
+                                        {% else %}
+                                            <td>No</td>
+                                        {% endif %}
+                                        <td></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <a class="btn btn-primary btn-sm" href="{{ url_for('admin.study', id=study.id) }}">Edit</a>
+                    <button type="button" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#delete-study-{{study.id}}-modal">
+                            Delete
+                        </button>
+                    <a class="btn btn-warning btn-sm float-right" href="{{ url_for('responses.general', id=study.id) }}">Responses</a>
+                        <div class="modal fade confirm-delete" id="delete-study-{{study.id}}-modal" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                            <div class="modal-dialog" role="document">
+                              <div class="modal-content">
+                                <div class="modal-header">
+        
+                                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                  </button>
+                                </div>
+                                <div class="modal-body">
+                                    Are you sure you want to delete {{ study.name }}?
+                                </div>
+                                <div class="modal-footer">
+                                  <form action="{{url_for('admin.delete_study', id=study.id)}}" method="post">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                                        <input type="submit" value="Delete" class="btn btn-danger">
+                                    </form>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                </div>
+              </div>
+            </div>
+        {% endfor %}
+        {% endif %}
+    </div>
+    <div class="row">
+    <div class="col-6">
+        <h3>Card Sets</h3>
+        <a class="badge badge-success my-3" href="{{ url_for('admin.new_card_set') }}">Create Card Set</a><br>
+        <div class="row">
+            {% if card_sets|length == 0 %}
+            <div class="col-md-6">
+                <p>You have not created any Card Sets yet :(</p>
+            </div>
+            {% else %}
+            {% for card_set in card_sets %}
+            <div style="margin-bottom: 20px;" class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ card_set.name }}</h5>
+                        <p>  
+                            <a class="text-primary" data-toggle="collapse" data-target="#collapseExample2{{card_set.id}}" aria-expanded="false" aria-controls="collapseExample2{{card_set.id}}">
+                                More Info
+                            </a>
+                        </p>
+                        <div class="collapse" id="collapseExample2{{card_set.id}}">
+                            <div style="margin-bottom:15px;" class="card card-body">
+                                <table class="table table-sm">
+                                    <tbody>
+                                        <tr>
+                                            <th scope="row">Measure</th>
+                                            <td>{{ card_set.measure}}</td>
+                                        </tr>
+                                        <tr>
+                                            <th scope="row">Number of Cards</th>
+                                            <td>{{ card_set.cards|length }}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <a class="btn btn-primary btn-sm" href="{{ url_for('admin.card_set', id=card_set.id) }}">Edit</a>
+                        <button type="button" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#delete-card-set-{{card_set.id}}-modal">
+                            Delete
+                        </button>
+                        <div class="modal fade confirm-delete" id="delete-card-set-{{card_set.id}}-modal" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                            <div class="modal-dialog" role="document">
+                              <div class="modal-content">
+                                <div class="modal-header">
+        
+                                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                  </button>
+                                </div>
+                                <div class="modal-body">
+                                    Are you sure you want to delete {{ card_set.name }}?
+                                </div>
+                                <div class="modal-footer">
+                                  <form action="{{url_for('admin.delete_card_set', id=card_set.id)}}" method="post">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                                        <input type="submit" value="Delete" class="btn btn-danger">
+                                    </form>
+                                </div>
+                              </div>
+                            </div>
+                          </div>       
+                    </div>
+                </div>
+            </div>
+
+        {% endfor %}
+        {% endif %}
+        </div>
+    </div>
+    <div class="col-6">
+    <h3>User Groups</h3>
+    <a class="badge badge-success my-3" href="{{ url_for('admin.new_user_group') }}">Create User Group</a><br>
+        <div class="row">
+        {% if user_groups|length == 0 %}
+            <div class="col-md-6">
+                <p>You have not created any User Groups yet :(</p>
+            </div>
+        {% else %}
+        {% for user_group in user_groups %}
+            <div style="margin-bottom: 20px;" class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card=title">{{ user_group.name }}</h5>
+            
+                        <p>  
+                            <a class="text-primary" data-toggle="collapse" data-target="#collapseExample3{{user_group.id}}" aria-expanded="false" aria-controls="collapseExample3{{user_group.id}}">
+                                More Info
+                            </a>
+                        </p>
+                        <div class="collapse" id="collapseExample3{{user_group.id}}">
+                            <div style="margin-bottom:15px;" class="card card-body">
+                                <table class="table table-sm">
+                                    <tbody>
+                                        <tr>
+                                            <th scope="row">Number of users</th>
+                                            <td>{{ user_group.users|length }}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <a class="btn btn-primary btn-sm" href="{{ url_for('admin.user_group', id=user_group.id) }}">Edit</a>
+                        <button type="button" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#delete-user-group-{{user_group.id}}-modal">
+                                Delete
+                        </button>
+                        <div class="modal fade confirm-delete" id="delete-user-group-{{user_group.id}}-modal" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                            <div class="modal-dialog" role="document">
+                                <div class="modal-content">
+                                <div class="modal-header">
+        
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    Are you sure you want to delete {{ user_group.name }}?
+                                </div>
+                                <div class="modal-footer">
+                                    <form action="{{url_for('admin.delete_user_group', id=user_group.id)}}" method="post">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                                        <input type="submit" value="Delete" class="btn btn-danger">
+                                    </form>
+                                </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+        {% endif %}
+    </div>
+</div>
+</div>
+{% endblock %}
+

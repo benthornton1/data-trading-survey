@@ -1,10 +1,11 @@
 {
-    "L1":"Level 1",
-    "L2":"Level 2",
-    "L3":"Level 3",
-    "L4":"Level 4",
-    "L5":"Level 5",
-    "L6":"Level 6",
-    "L7":"Level 7",
-    "L8":"Level 8"
+    "L0":"None",
+    "L1":"Level 1 - first certificate, GCSE (grades 3, 2, 1 or grades D, E, F, G )",
+    "L2":"Level 2 - CSE (grade 1), GCSE (grades 9, 8, 7, 6, 5, 4 or grades A*, A, B, C), intermediate apprenticeship",
+    "L3":"Level 3 - A level, access to higher education diploma, advanced apprenticeship, applied general, AS level, international Baccalaureate diploma",
+    "L4":"Level 4 - certificate of higher education (CertHE), higher apprenticeship, higher national certificate (HNC)",
+    "L5":"Level 5 - Diploma of Higher Education (DipHE), foundation degree, higher national diploma (HND)",
+    "L6":"Level 6 - Degree with Honours (BSc, BA, etc), graduate diploma, graduate certificate",
+    "L7":"Level 7 - Masters Degree, Postgraduate Diploma, Postgraduate Certificate",
+    "L8":"Level 8 - Doctorate (PhD, DPhil)"
 }

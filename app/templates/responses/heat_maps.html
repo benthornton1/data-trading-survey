@@ -3,14 +3,20 @@
 {% block head %}
 {{ super() }}
 <script src="{{ url_for('static', filename='js/heatmaps.js') }}"></script>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/heat_maps.css') }}">
+<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
+
 {% endblock %}
 
 {% block content %}
 {{super()}}
-<h3>Heatmaps</h3>
+<h3>Heat Maps</h3>
+<p>Here you can add individual heat maps of pairings of cards from card set 
+    <b>{{ card_set_x.name }}</b> and card set <b>{{ card_set_y.name }}</b> 
+    over different data value labels from study <b>{{ study.name }}</b> </p>
 <form>
-    <div class="row">
-        <div class="col md-3">
+    <div class="form-row">
+        <div class="form-group col-md-3">
             <label>{{ card_set_x.name }}</label>
             <select id="card-x" class="form-control">
                 {% for card_x in card_set_x.cards %}
@@ -18,22 +24,48 @@
                 {% endfor %}
             </select>
         </div>
-        <div class="col md-3">
+        <div class="form-group col-md-3">
             <label>{{ card_set_y.name }}</label>
             <select id="card-y" class="form-control">
+                
                 {% for card_y in card_set_y.cards %}
                     <option card_id="{{ card_y.id }}">{{ card_y.name }}</option>
                 {% endfor %}
             </select>
         </div>
-        <div class="col">
-            <label></label>
-            <a id="add-heatmap" class="btn btn-primary" url="{{ url_for('responses.heat_maps', study_id=study.id) }}" csrf_token="{{ csrf_token() }}" type="one">Add</a>
+        {% if study.data_value_labels|length > 0 %}
+            <div class="form-group col-md-3">
+                <label>Data Value Label</label>
+                <select id="label" class="form-control">
+                    {% for label in study.data_value_labels %}
+                        <option label_id="{{ label.id }}">{{ label.label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        {% endif %}
+        <div class="form-group col-md-3">
+            <label>Type</label>
+            <select id="type" class="form-control">
+                <option type="true">Count</option>
+                {% if study.data_value_labels|length > 0 %}
+                    <option type="false">Not Count</option>
+                {% endif %}
+            </select>
         </div>
+        
+        <div class="form-group col-md-6 align-self-end text-white">
+            <a class="btn btn-primary add-heatmap" url="{{ url_for('responses.heat_maps', id=study.id) }}" csrf_token="{{ csrf_token() }}" type="one">Add</a>
+            <a class="btn btn-primary add-heatmap" url="{{ url_for('responses.heat_maps', id=study.id) }}" csrf_token="{{ csrf_token() }}" type="all">Add All</a>
+            <a id="remove-all-heatmaps" class="btn btn-danger">Remove All</a>
+        </div>
+        
+        
     </div>
 </form>
-
-<div id="heatmap-grid" class="row">
+<div class="row loading">
+    
+</div>
+<div class="row heat-map-grid">
     
 </div>
 {% endblock %}

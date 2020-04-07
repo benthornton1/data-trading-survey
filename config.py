@@ -3,6 +3,7 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 
 class DefaultConfig(object):
     SECRET_KEY = os.environ.get('FLASK_PROJECT_SECRET_KEY')
+    JWT_SECRET_KEY = os.environ.get('JWT_SECRET_KEY')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SCHEDULER_API_ENABLED = True
     UPLOAD_FOLDER='app/static'
@@ -12,7 +13,6 @@ class DefaultConfig(object):
     MAIL_USE_TLS=os.environ.get('FLASK_PROJECT_MAIL_USE_TLS') is not None
     MAIL_USERNAME=os.environ.get('FLASK_PROJECT_MAIL_USERNAME')
     MAIL_PASSWORD=os.environ.get('FLASK_PROJECT_MAIL_PASSWORD')
-    ADMINS=os.environ.get('FLASK_PROJECT_MAIL_USERNAME')
     
 class ProductionConfig(DefaultConfig):
     SQLALCHEMY_DATABASE_URI = os.environ.get('FLASK_PROJECT_PRODUCTION_DATABASE')
@@ -21,17 +21,14 @@ class ProductionConfig(DefaultConfig):
     
 class DevelopmentConfig(DefaultConfig):
     SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'app.db')
-    MAIL_SUPPRESS_SEND=True
     DEBUG = True
-    TESTING = True
+    TESTING = False
     WTF_CSRF_ENABLED = True
-    USE_RELOADER = False
-    SQLALCHEMY_ECHO=True
-
 
 class TestConfig(DefaultConfig):
     USE_RELOADER = False
     TESTING = True
     DEBUG = True
     WTF_CSRF_ENABLED = False
+    SQLALCHEMY_ECHO=False
     SQLALCHEMY_DATABASE_URI = 'sqlite://'

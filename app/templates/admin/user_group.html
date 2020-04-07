@@ -40,7 +40,7 @@
     
     </div>
     <hr>
-
+    
     <form id="user-group-form" action="" method="post" novalidate>
             {{ form.hidden_tag() }}
             <div class="form-group">
@@ -50,7 +50,9 @@
                     <span style="color: red;">[{{ error }}]</span>
                 {% endfor %}
             </div>
+            <label>{{ form.users.label}}</label>
                 <div id="czContainer">
+                    
                     {% for user in form.users %}
                         {% if loop.index == 1 %}
                         <div id="first">

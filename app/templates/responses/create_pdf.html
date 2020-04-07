@@ -1,0 +1,38 @@
+{% extends "responses/responses_base.html" %}
+
+{% block head %}
+{{ super() }}
+<script src="{{ url_for('static', filename='js/create_pdf.js') }}"></script>
+{% endblock %}
+
+{% block content %}
+<h3>Create PDF</h3>
+<p>Here you can generate a PDF and select what responses you want to include in the pdf</p>
+<form>
+    <div class="form-row">
+        <div class="form-group">
+            <div class="custom-control custom-checkbox all-responses">
+                <input id="all-responses" type="checkbox" class="custom-control-input" >
+                <label class="custom-control-label" for="all-responses">All Responses</label>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="custom-control custom-checkbox">
+                <input id="average-response" type="checkbox" class="custom-control-input" >
+                <label class="custom-control-label" for="average-response">Average Response</label>
+            </div>
+        </div>
+    </div>
+    <div class="form-group">
+        <label for="specific-responses">Specific Responses</label>
+        <select multiple class="form-control specific-responses" id="specific-responses">
+            {% for response in responses %}
+                <option response_id="{{ response.id }}">{{ response.participant.username }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="form-group text-white">
+        <a class="btn btn-primary create-pdf" url="{{ url_for('responses.create_pdf', id=study.id) }}" csrf_token="{{ csrf_token() }}">Download PDF</a>
+    </div>
+</form>
+{% endblock %}

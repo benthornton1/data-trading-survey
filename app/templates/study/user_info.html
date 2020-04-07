@@ -1,76 +1,28 @@
-{% extends "base2.html" %}
+{% extends "base3.html" %}
 
 {% block content %}
-    <div class="jumbotron">
-        <h3 class="display-4">Hey!</h3>
-                <p class="lead">Welcome to user study platform. shortly you will be asked to rank some different
-                    types of personal data and different organisations and how much money you would be
-                    willing to sell that data for to those organisations for.
-                </p>
-        <hr class="my-4">
-        <p>First, we are going to ask you to fill out some data about yourselves.</p>
-        <form action="" method="post" novalidate>
-            {{ form.hidden_tag() }}
-            <div class="form-group">
-                <label>{{ form.gender.label }}</label>
-                {{ form.gender(class="form-control") }}
-                {% for error in form.gender.errors %}
-                    <span style="color: red; ">[{{ error }}]</span>
-                {% endfor %}
-            </div>
-            <div class="form-group">
-                    <label>{{ form.age_group.label }}</label>
-                    {{ form.age_group(class="form-control") }}
-                    {% for error in form.age_group.errors %}
-                        <span style="color: red; ">[{{ error }}]</span>
-                    {% endfor %}
-            </div>
-            <div class="form-group">
-                    <label>{{ form.nationality.label }}</label>
-                    {{ form.nationality(class="form-control") }}
-                    {% for error in form.nationality.errors %}
-                        <span style="color: red; ">[{{ error }}]</span>
-                    {% endfor %}
-            </div>
-            <div class="form-group">
-                    <label>{{ form.latest_country.label }}</label>
-                    {{ form.latest_country(class="form-control") }}
-                    <small class="form-text text-muted">
-                        This is the country you have lived in most in the last 10 years.
-                    </small>
-                    {% for error in form.latest_country.errors %}
-                        <span style="color: red; ">[{{ error }}]</span>
-                    {% endfor %}
-            </div>
-            <div class="form-group">
-                    <label>{{ form.education_level.label }}</label>
-                    {{ form.education_level(class="form-control") }}
-                    {% for error in form.education_level.errors %}
-                        <span style="color: red; ">[{{ error }}]</span>
-                    {% endfor %}
+<div class="row h-100 justify-content-center align-items-center">
+    <div class="card">
+            <div class="card-body">
+                {% with messages = get_flashed_messages() %}
+                    {% if messages %}
+                    <div class="alert alert-primary" role="alert">
+                            {% for message in messages %}
+                                {{ message }}
+                            {% endfor %}
+                    </div>
+                    {% endif %}
+                {% endwith %}
+
+                <h3>Hey!</h3>
+                <p>Welcome to the IoT Data Trading Survey platform. shortly you will be participating in survey about
+                    how willing you would be to sell your data and at what cost.</p>
+                    <hr class="my-4">
+                    <p>First, we are going to ask you to fill out some data about yourselves.</p>
+                    {% include "study/info_form_base.html" %}
+
                 </div>
-            <div class="form-group">
-                <label>{{ form.occupation.label }}</label>
-                {{ form.occupation(class="form-control") }}
-                {% for error in form.occupation.errors %}
-                    <span style="color: red; ">[{{ error }}]</span>
-                {% endfor %}
-            </div>
-            <div class="form-group">
-                <label>{{ form.income.label }}</label>
-                {{ form.income(class="form-control") }}
-                <small class="form-text text-muted">
-                    Income per anum.
-                </small>
-                {% for error in form.income.errors %}
-                    <span style="color: red; ">[{{ error }}]</span>
-                {% endfor %}
-            </div>
             
-            <p>    {{ form.submit(class="btn btn-primary") }}</p>
-            
-
-
-        </form>
+        </div>
     </div>
 {% endblock %}
