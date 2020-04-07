@@ -1,7 +1,11 @@
 # app specific
 migrations_dev/
+app/static/img/card_images/
+app/static/img/study_images/
+app/static/pdf/
 test2.py
 test3.py
+test4.py
 app.db
 
 # vscode

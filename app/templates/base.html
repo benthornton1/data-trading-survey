@@ -1,10 +1,10 @@
 <html>
     <head>
-        <title>User Study</title>
+        <title>IoT Data Trading Survey</title>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>        
-        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+        <script src="{{ url_for('static', filename='js/bootstrap/bootstrap.min.js') }}"></script>
+        <link rel="stylesheet" href=" {{url_for('static', filename='css/bootstrap/bootstrap.css') }}">
         <script src="https://cdn.jsdelivr.net/npm/bs-custom-file-input/dist/bs-custom-file-input.min.js"></script>
-        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
         {% block head %}
@@ -12,10 +12,10 @@
     </head>
     <body>
         <nav class="navbar navbar-expand-sm navbar-dark bg-primary">
-            {% if current_user.is_admin %}
-                <a class="navbar-brand" href="{{ url_for('admin.admin') }}">IoT Data Trading Admin Site</a>
+            {% if current_user.type == 'admin' %}
+                <a class="navbar-brand" href="{{ url_for('admin.index') }}">IoT Data Trading Survey Admin Site</a>
             {% else %}
-                <a class="navbar-brand" href="{{ url_for('study.index') }}">IoT Data Trading</a>
+                <a class="navbar-brand" href="{{ url_for('study.index') }}">IoT Data Trading Survey</a>
             {% endif %}
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarText">
                 <span class="navbar-toggler-icon"></span>
@@ -24,10 +24,9 @@
         
             <div class="collapse navbar-collapse" id="navbarText">
                 <ul class="navbar-nav mr-auto">
-                    {% if current_user.is_admin %}
-
+                    {% if current_user.type == 'participant' %}
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('responses.index') }}">Responses</a>
+                            <a class="nav-link" href="{{ url_for('study.change_info') }}">Change Info</a>
                         </li>
                     {% endif %}                          
                 </ul>
@@ -47,6 +46,8 @@
                 </ul>
             </div>
         </nav>
+        {% block subnav %}
+        {% endblock %}
 
         <div style="padding-top: 30px;" class="container">
             {% with messages = get_flashed_messages() %}
@@ -60,6 +61,10 @@
             {% endwith %}
         {% block content %}
         {% endblock %}
+        </div>
+        <div class="container-fluid">
+            {% block table %}
+            {% endblock %}
         </div>
     </body>
 </html>

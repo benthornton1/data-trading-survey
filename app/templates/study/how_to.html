@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h3>How To</h3>
+<p>Below is a video to help you to answer the study as it is not entirely obvious.</p>
+<div class="row">
+    <div class="col-sm-6">
+      <div class="embed-responsive embed-responsive-16by9">
+        <iframe class="embed-responsive-item" src="//www.youtube.com/embed/zB4I68XVPzQ"></iframe>
+      </div>
+    </div>
+</div>
+<a style="margin-top:20px;" class="btn btn-primary" href="{{ url_for('study.index') }}" role="button">Go to Study</a>
+
+{% endblock %}

@@ -1,0 +1,22 @@
+{% extends "base3.html" %}
+
+{% block content %}
+<div class="row h-100 justify-content-center align-items-center">
+    
+            
+    <div class="text-center">
+        {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                <div class="alert alert-primary" role="alert">
+                        {% for message in messages %}
+                            {{ message }}
+                        {% endfor %}
+                </div>
+                {% endif %}
+        {% endwith %}
+        <h3>Thank You!</h3>
+        <p>Thanks for participating in the study, you can now log out of the system.</p>
+        <a href="{{ url_for('auth.logout') }}" class="btn btn-primary btn-sm">Log out</a> 
+    </div>
+</div>
+{% endblock %}

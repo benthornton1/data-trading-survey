@@ -1,30 +1,39 @@
 
-#sortable-container { 
+#sortable-container-x, #sortable-container-y { 
     background: #eee; 
-    padding: 10px; 
-}
-#sortable-container .card { 
-    text-align: center; 
-    font-size: 10pt;
-    margin:10px;
-}
-#sortable-x {
-    margin:10px;
-}
-
-
-#sortable-y {
     padding: 10px;
-    float: right;
-    
+    margin-bottom:30px;
+}
+table {
+    width: 100%;
+}
+table td {
+    min-height: 15vh;
+}
+.card { 
+    text-align: center; 
+    font-size: 8pt;
+    margin: 10px;
+    width: 8vw;
+    min-width: 100px;
 }
 
-#sortable-y .card {
-    margin: 10px;
-    height: 50%;
-    width: 100px; height: 90px;
+.card img {
+    width: 100%; height: 9vh; min-height:80px; object-fit: cover;
+}
+
+.sortable-x .card{
+    margin-left:auto;
+    margin-right:auto;
+}
+
+.sortable-y .card {
+    margin-left:auto;
+}
+.sortable-y {
+    display:flex;justify-content:flex-end;align-items:center;width:100%;height:100%;
 }
 
 #card-table td{
-    font-size: 10pt;
+    font-size: 8pt;
 }

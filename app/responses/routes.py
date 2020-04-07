@@ -1,89 +1,116 @@
-from app.responses import bp
-from app import db
-from flask import request
-from app.admin.decorators import admin_required
-from flask_login import current_user
-from app.models import Card, Response, Study, HeatMap
-from flask.templating import render_template
-from sqlalchemy import desc
-from app.responses.parsing.average_response import average_response as avg
-from app.responses.parsing.position_count import get_card_x_responses, get_card_y_responses
-from app.responses.parsing.add_heatmaps import CreateAllHeatMaps, CreateOneHeatMap
 from statistics import mean
-import pdb
+
 from bokeh.models.formatters import FuncTickFormatter
 from bokeh.models.tickers import FixedTicker
+from flask import redirect
+from flask import request
+from flask.helpers import flash, send_file, url_for
+from flask_login import current_user, login_required
+from flask.templating import render_template
+from munch import munchify
+from sqlalchemy import desc
+from werkzeug.exceptions import HTTPException
+
+from app import db
+from app.admin.decorators import valid_admin_required, admin_required
+from app.models import Card, DataValueLabel, HeatMap, Response, Study
+from app.responses import bp
+from app.responses.parsing.add_heat_maps import CreateAllHeatMaps, CreateOneHeatMap
+from app.responses.parsing.average_response2 import average_response as avg
+from app.responses.parsing.create_pdf import create_pdf as gen_pdf
+from app.responses.parsing.position_count import get_card_x_responses, get_card_y_responses
 
 
-@bp.route('/')
+@bp.route('/<int:id>')
+@login_required
 @admin_required
-def index():
-    studies = Study.query.filter_by(creator=current_user.id).all()
-    
-    return render_template('responses/index.html', studies=studies)
-
-@bp.route('/<int:study_id>')
-def response(study_id):
-    responses = Response.query.filter_by(study=study_id).all()
-    study = Study.query.filter_by(id=study_id).first_or_404()
-
-    script_x, div_x = get_card_x_responses(study, responses)
-    script_y, div_y = get_card_y_responses(study, responses)
-    avg_response = avg(study, responses)
-    cards_y = avg_response.get('cards_y')
-    cards_x = avg_response.get('cards_x')
-    data_values = avg_response.get('data_values')
-    card_set_x = study.card_sets[0]
-    card_set_y = study.card_sets[1]
-    data_values_labels = study.data_values_labels
-    
-   
+@valid_admin_required(model="study")
+def general(id, study):
+    script_x, div_x = get_card_x_responses(study, study.responses)
+    script_y, div_y = get_card_y_responses(study, study.responses)
+        
     return render_template(
-        'responses/average_response.html',
+        'responses/general.html',
         plot_script_x=script_x,
         plot_div_x=div_x,
         plot_script_y=script_y,
         plot_div_y=div_y,
+        responses=study.responses,
         study=study,
-        creator=current_user.id,
-        cards_x = cards_x,
-        cards_y = cards_y,
-        data_values = data_values,
-        data_values_labels = data_values_labels,
-        card_set_x = card_set_x,
-        card_set_y = card_set_y
     )
 
-@bp.route('/<int:study_id>')
-def general(study_id):
-    return "General"
 
-@bp.route('/heat_maps/<int:study_id>', methods=['GET','POST'])
-def heat_maps(study_id):
-    study = Study.query.filter_by(id=study_id).first_or_404()
+@bp.route('/heat_maps/<int:id>', methods=['GET','POST'])
+@login_required
+@admin_required
+@valid_admin_required(model="study")
+def heat_maps(id, study):
+
     if request.method =='POST':
         data = request.get_json()
-        type = data.get('type')
-        plots = []
-        if type == 'one':
-            card_x_id = data.get('card_x_id')
-            card_y_id = data.get('card_y_id')
+        if data.get('type') == 'one':
             hm = CreateOneHeatMap()
-            plots = hm.add(card_x_id=card_x_id, card_y_id=card_y_id, study=study)
+            
+            if data.get('label_id'):
+                label = DataValueLabel.query.filter_by(id=data.get('label_id')).first()
+                hm.add(card_x_id=data.get('card_x_id'), card_y_id=data.get('card_y_id'), label=label, study=study, is_count=data.get('is_count'))
+            else:
+                hm.add(card_x_id=data.get('card_x_id'), card_y_id=data.get('card_y_id'), study=study, is_count=data.get('is_count'))
+            plots = hm.plots
         else:
             hm = CreateAllHeatMaps()
-            plots = hm.add(study=study)
-            
-        plots_dict = dict(plots)
+            hm.add(study=study, is_count=data.get('is_count'))
+            plots = hm.plots
+        return dict(plots=dict(plots))
+
         
-        return dict(plots=plots_dict)
+    return render_template('responses/heat_maps.html', study=study, card_set_x=study.card_set_x, card_set_y=study.card_set_y)
 
-    return render_template('responses/heat_maps.html', study=study, card_set_x=study.card_sets[0], card_set_y=study.card_sets[1])
+@bp.route('/compare/<int:id>', methods=['GET','POST'])
+@login_required
+@admin_required
+@valid_admin_required(model="study")
+def compare_responses(id, study):    
+    if request.method == 'POST':
+        data = request.get_json()
+        try:
+            if data.get('response_id_1') == 'average':
+                response_1 = munchify(avg(study))
+            else:
+                response_1 = Response.query.filter(Response.study_id==study.id, Response.id==int(data.get('response_id_1'))).first()
+            
+            if data.get('response_id_2') == 'average':
+                response_2 = munchify(avg(study))
+            else:
+                response_2 = Response.query.filter(Response.study_id==study.id, Response.id==int(data.get('response_id_2'))).first()
+            return dict(data=render_template('responses/response.html', data_value_labels=study.data_value_labels, card_set_x=study.card_set_x, card_set_y=study.card_set_y, study=study, responses=[response_1, response_2]))
+        except:
+            flash('Invalid choice.')
+            
+    return render_template('responses/compare_responses.html', study=study, responses=study.responses)
 
-@bp.route('/compare/<int:study_id>')
-def compare_responses(study_id):
-    return "Compare"  
+
+@bp.route('/average/<int:id>')
+@login_required
+@admin_required
+@valid_admin_required(model="study")
+def average_response(id, study):
+
+    avg_response = avg(study)
+    return render_template('responses/average_response.html',data_value_labels=study.data_value_labels, study=study, card_set_x = study.card_set_x, card_set_y=study.card_set_y, average_response=avg_response)
+
+@bp.route('/create_pdf/<int:id>', methods=['GET','POST'])
+@login_required
+@admin_required
+@valid_admin_required(model="study")
+def create_pdf(id, study):
     
-@bp.route('/average/<int:study_id>')
-def average_response(study_id):
-    return "Average"
+    if request.method=='POST':
+        try:
+            data = request.get_json()
+            file_path = gen_pdf(study, all_responses=data.get('all_responses'), average_response2=data.get('average_response'), response_ids=data.get('response_ids'))
+            return dict(file_path=file_path)
+        except:
+            flash('Could not create pdf.')
+        
+    return render_template('/responses/create_pdf.html', study=study, responses=study.responses)

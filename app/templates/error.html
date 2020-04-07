@@ -1,0 +1,23 @@
+{% extends "base3.html" %}
+
+{% block content %}
+<div class="row h-100 justify-content-center align-items-center">
+    
+            
+    <div class="text-center">
+    {% with messages = get_flashed_messages() %}
+            {% if messages %}
+            <div class="alert alert-primary" role="alert">
+                    {% for message in messages %}
+                        {{ message }}
+                    {% endfor %}
+            </div>
+            {% endif %}
+    {% endwith %}
+    
+    <h3 class="">Error :(</h3><br>
+    <h4 class="">{{ error_code|string }} {{ error_name }}</h4>
+    <a href={{ url }}>Go Back</a>
+    </div>
+</div>
+{% endblock %}

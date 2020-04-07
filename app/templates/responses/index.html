@@ -2,17 +2,30 @@
 
 {% block content %}
     {% if studies %}
-        {% for study in studies %}
-            <div class="col mr-auto mb-3">
-                <div class="card" style="width: 18rem;">
-                    <div class="card-body">
-                        <h5 class="card-title">{{ study.name }}</h5>
-                        <p class="card-text">Check out the responses to the study.</p>
-                        <a href="{{ url_for('responses.response', study_id=study.id) }}" class="btn btn-primary btn-sm">Responses</a> 
+    <div class="row">
+    {% for study in studies %}
+    
+        <div class="col-sm-6">
+                <div class="card">
+                  {% if study.image %}
+                      <img style="width: 100%; height: 13vw; object-fit: cover;" class="card-img-top" src="{{ url_for('static', filename='img/study_images/'~creator~'/'+study.image) }}" alt="Study Image">
+                  {% else %}
+                      <img style="width: 100%; height: 13vw; object-fit: cover;" src="{{url_for('static', filename='img/study_images/no_image.jpg')}}" class="card-img-top" alt="No Image">
+                  {% endif %}
+                  <div class="card-body">
+  
+                    <h5 class="card-title">{{ study.name }}</h5>
+                    <h6 class="card-subtitle mb-2 text-muted">{{ study.start_date }} to {{ study.end_date }}</h6>
+                    {% if study.description %}
+                      <p class="card-text">{{ study.description }}</p>
+                    {% endif %}
+                    
+                      <a class="btn btn-primary btn-sm" href="{{ url_for('responses.general', id=study.id) }}">View Responses</a>
                     </div>
                 </div>
-            </div>
+                </div>
         {% endfor %}
+        </div>
     {% else %}
     {% endif %}
 {% endblock %}

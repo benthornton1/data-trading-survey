@@ -1,111 +1,46 @@
 {% extends "base.html" %}
 
 {% block head %}
-  <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/board.css') }}">
-  <script src="https://unpkg.com/@popperjs/core@2"></script>
-  <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
-  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-  <script>
-    $(function () {
-        $('[data-toggle="tooltip"]').tooltip()
-    })
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/board.css') }}">
+    <script src="{{ url_for('static', filename='js/process_cards.js') }}"></script>
+    <script src="https://unpkg.com/@popperjs/core@2"></script>
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <script>
+        $(function () {
+            $('[data-toggle="tooltip"]').tooltip()
+        })
     </script>
-  <script>
-      
-  var csrf_token = "{{ csrf_token() }}";
-
-$.ajaxSetup({
-    beforeSend: function(xhr, settings) {
-        if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
-            xhr.setRequestHeader("X-CSRFToken", csrf_token);
-        }
-    }
-});
-
-$( function() {
-$( ".droptrue1" ).sortable({
-  connectWith: ".droptrue1",
-  forcePlaceholderSize: true
-});
-
-$( ".droptrue2" ).sortable({
-  connectWith: ".droptrue2"
-});
-
-$( "ul.dropfalse" ).sortable({
-  connectWith: "ul",
-  dropOnEmpty: false
-});
-
-$( "#sortable-x #sortable-y" ).disableSelection();
-
-$("a#submit").click(function(){
-    var cards_x = {}
-    var cards_y = {}
-    var data_values = {}
-    
-    clicked = $("table tr").each(function() {
-        // cards_x = $(this).find(".data_cards_x li").toArray()
-        
-        $(this).find("td").each(function(){
-            var col_row = $(this).attr("col-row")
-            if(!!col_row){
-                data_values[col_row] = []
-            }
-            $(this).find(".data_values").each(function(){
-                data_values[col_row].push($(this).val());
-            });
-            var col = $(this).attr("col")
-            if(!!col){
-                cards_x[col] = []
-            }
-        });
-        
-        $(this).find(".data_cards_x li").each(function(){
-            var col = $(this).parentsUntil('td').parent().attr('col')
-            if(!!col){
-                cards_x[col].push($(this).attr("id"))
-            }
-        });
-        
-        var row = $(this).attr("row")
-        if(!!row){
-            cards_y[row] = []
-        }
-        $(this).find(".data_cards_y li").each(function(){
-            // cards_y.row.push($(this).attr("id"))
-            cards_y[row].push($(this).attr("id"))
-        });
-
-    });
-    var data = {}
-    data['cards_x'] = cards_x
-    data['cards_y'] = cards_y
-    data['data_values'] = data_values
-
-    $.ajax({
-        type : 'POST',
-        url : url1,
-        contentType: 'application/json;charset=UTF-8',
-        data: JSON.stringify(data),
-        dataType: "json",
-        success: function(response){
-            window.location.href = response['url'];
-        },
-        error : function (response) {
-            console.log(response);
-        }
-     
-    });
-});
-} );
-  </script>
 {% endblock %}
 
-{% block content %}
+{% block table %}
 <div class="row">
-    
+    <div class="col">
+        <h3>{{ study.card_set_y.name }}</h3>
+        <p class="text-muted">Place these cards along the Y axis of the table below.</p>
+        <div id="sortable-container-y" class="droptrue2 d-flex flex-wrap">
+            {% for card in card_set_y.cards %}
+            <div>
+                <div card_id="{{card.id}}" class="card">
+                    {% if card.image %}
+                        <img class="card-img-top img" src="{{ url_for('static', filename='img/card_images/'~creator_id~'/'+card.image) }}" alt="Card Image">
+                    {% endif %}
+                    <div class="card-body">
+                        {% if card.description %}
+                            <p class="card-text title description" data-toggle="tooltip" data-placement="top" title="{{ card.description }}">{{ card.name }}</p>       
+                        {% else %}
+                            <p class="card-text title">{{ card.name }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>  
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<div class="row">
 <div class="col">
 <div id="card-table" class="table-responsive">
  <table class="table table-bordered">
@@ -113,12 +48,10 @@ $("a#submit").click(function(){
     {% set outer_loop = loop %}
 
 
-        <tr row="{{ study.number_of_rows-outer_loop.index }}">
+        <tr>
         
-            <td id="sortable-y">
-                <!-- <div id="sortable-y-div" class="droptrue2 d-flex flex-nowrap">
-                
-                </div> -->
+            <td style="border:none;" row="row_{{ study.number_of_rows-outer_loop.index }}" class="sortable-y droptrue2 d-flex flex-nowrap cards-row">
+              
             </td>
         
             {% if loop.index0 == 0%}
@@ -136,15 +69,15 @@ $("a#submit").click(function(){
             
             {% for column in range(0, study.number_of_columns) %}
             
-                <td style="vertical-align: middle;" col-row="col-{{ loop.index0 }}-row-{{ study.number_of_rows-outer_loop.index }}">
+                <td class="data-values" style="vertical-align: middle;" col-row="col_{{ loop.index0 }}_row_{{ study.number_of_rows-outer_loop.index }}">
                   
-                    {% for label in study.data_values_labels %}
-                    <form>
-                        <div class="form-group">
-                            <label>{{ label.label }}</label>
-                            <input type="number" col-row="col-{{ loop.index0 }}-row-{{ study.number_of_rows-outer_loop.index }}" class="data_values form-control form-control-sm">    
-                        </div>
-                    </form>
+                    {% for label in study.data_value_labels %}
+                        <form>
+                            <div class="form-group data-value">
+                                <label label_id="{{ label.id }}" >{{ label.label }}</label>
+                                <input type="number" class="value form-control form-control-sm">    
+                            </div>
+                        </form>
                     {% endfor %}
             
                 </td>
@@ -179,10 +112,8 @@ $("a#submit").click(function(){
         
         {% for col in range(0, study.number_of_columns) %}
         {% set outer_loop = loop %}
-            <td id="sortable-x" col="{{ outer_loop.index0 }}" class="droptrue1">
-                    <!-- <div id="sortable-x-div" class="d-flex flex-wrap flex-column">
-                    
-                    </div> -->
+            <td style="border:none;" col="col_{{ outer_loop.index0 }}" class="sortable-x droptrue1 cards-col">
+            
             </td>
         {% endfor %}
     </tr>
@@ -193,19 +124,20 @@ $("a#submit").click(function(){
  </div>
  <div class="row">
     <div class="col">
-        <h3>Cards X</h3>
-        <div id="sortable-container" class="droptrue1 d-flex flex-wrap">
+        <h3>{{ study.card_set_x.name }}</h3>
+        <p class="text-muted">Place these cards along the X axis of the table above.</p>
+        <div id="sortable-container-x" class="droptrue1 d-flex flex-wrap">
             {% for card in card_set_x.cards %}
             <div>
-                    <div class="card" style="width: 7rem;">
+                    <div card_id="{{ card.id }}" class="card">
                     {% if card.image %}
-                        <img class="card-img-top" style="width: 100%; height: 6vw; object-fit: cover;" src="{{ url_for('static', filename='img/card_images/'~creator~'/'+card.image) }}" alt="Card Image">
+                        <img class="card-img-top img" src="{{ url_for('static', filename='img/card_images/'~creator_id~'/'+card.image) }}" alt="Card Image">
                     {% endif %}        
                         <div class="card-body">
-                            {% if card.desc %}
-                                <p class="card-text" data-toggle="tooltip" data-placement="top" title="{{ card.desc }}">{{ card.name }}</p>       
+                            {% if card.description %}
+                                <p class="card-text title description" data-toggle="tooltip" data-placement="top" title="{{ card.description }}">{{ card.name }}</p>       
                             {% else %}
-                                <p class="card-text"> {{ card.name }}</p>
+                                <p class="card-text title">{{ card.name }}</p>
                             {% endif %}
                         </div>
                     </div>
@@ -214,34 +146,8 @@ $("a#submit").click(function(){
         </div>
     </div>
 </div>
-<div class="row">
-    <div class="col">
-        <h3>Cards Y</h3>
-        <div id="sortable-container" class="droptrue2 d-flex flex-wrap">
-            {% for card in card_set_y.cards %}
-            <div>
-                <div class="card" style="width: 7rem;">
-                    {% if card.image %}
-                        <img class="card-img-top" style="width: 100%; height: 6vw; object-fit: cover;" src="{{ url_for('static', filename='img/card_images/'~creator~'/'+card.image) }}" alt="Card Image">
-                    {% endif %}
-                    <div class="card-body">
-                        {% if card.desc %}
-                            <p class="card-text" data-toggle="tooltip" data-placement="top" title="{{ card.desc }}">{{ card.name }}</p>       
-                        {% else %}
-                            <p class="card-text">{{ card.name }}</p>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>  
-            {% endfor %}
-        </div>
-    </div>
-</div>
 
- <a id="submit"><button type="button" class="btn btn-primary">Submit</button></a>
- <script type="text/javascript">
-    var url1 = "{{ url_for('study.study', study_id=study.id ) }}"
-</script>
+<a id="submit" class="btn btn-primary text-white" url="{{ url_for('study.study', id=study.id )}}" csrf="{{ csrf_token() }}">Submit</a>
 {% endblock %}
 
 

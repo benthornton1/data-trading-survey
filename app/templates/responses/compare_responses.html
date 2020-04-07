@@ -1,0 +1,43 @@
+{% extends "responses/responses_base.html" %}
+
+{% block head %}
+{{ super() }}
+<script src="{{ url_for('static', filename='js/compare_responses.js') }}"></script>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/board.css') }}">
+{% endblock %}
+
+{% block content %}
+<h3>Compare Responses</h3>
+<p>Here you can compare responses to study <b>{{ study.name }}</b> from pairs of users.</p>
+<form>
+    <div class="form-row">
+        <div class="form-group col-md-3">
+            <label>Response 1</label>
+            <select id="response-1" class="form-control" csrf_token="{{ csrf_token() }}">
+                <option response_id="average">Average</option>
+                {% for response in responses %}
+                    <option response_id="{{ response.id }}">{{ response.participant.username }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group col-md-3">
+            <label>Response 2</label>
+            <select id="response-2" class="form-control" csrf_token="{{ csrf_token() }}">
+                    <option response_id="average">Average</option>
+                {% for response in responses %}
+                    <option response_id="{{ response.id }}">{{ response.participant.username }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group col-md-6 align-self-end text-white">
+            <a class="btn btn-primary compare-responses" url="{{ url_for('responses.compare_responses', id=study.id) }}" csrf_token="{{ csrf_token() }}">Compare</a>
+            <a id="remove-all" class="btn btn-danger">Remove All</a>
+        </div>
+    </div>
+</form>
+{% endblock %}
+{% block table %}
+<div class="row responses">
+
+</div>
+{% endblock %}

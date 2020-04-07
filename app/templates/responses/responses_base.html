@@ -6,11 +6,16 @@
 <script src="{{ url_for('static', filename='js/active_link.js') }}"></script>
 {% endblock %}
 
+{% block subnav %}
+<nav class="nav bg-light">
+    <a class="nav-link active" href="{{ url_for('responses.general', id=study.id) }}">General</a>
+    <a class="nav-link" href="{{url_for('responses.heat_maps', id=study.id) }}">Heat Maps</a>
+    <a class="nav-link" href="{{url_for('responses.compare_responses', id=study.id) }}">Compare Responses</a>
+    <a class="nav-link" href="{{url_for('responses.average_response', id=study.id) }}">Average Response</a>
+    <a class="nav-link" href="{{url_for('responses.create_pdf', id=study.id) }}">Create PDF</a>
+</nav>
+{% endblock %}
 {% block content %}
-    <nav class="nav">
-        <a class="nav-link active" href="{{ url_for('responses.general', study_id=study.id) }}">General</a>
-        <a class="nav-link" href="{{url_for('responses.heat_maps', study_id=study.id) }}">Heat Maps</a>
-        <a class="nav-link" href="{{url_for('responses.compare_responses', study_id=study.id) }}">Compare Responses</a>
-        <a class="nav-link" href="{{url_for('responses.average_response', study_id=study.id) }}">Average Response</a>
-    </nav>
+{% endblock %}
+{% block table %}
 {% endblock %}
