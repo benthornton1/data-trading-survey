@@ -82,7 +82,7 @@ class DataValueLabel(db.Model):
 class Study(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100))
-    description = db.Column(db.String(100))
+    description = db.Column(db.String(500))
     image = db.Column(db.String(100))
     data_values = db.Column(db.Integer)
     number_of_columns = db.Column(db.Integer)
@@ -120,7 +120,7 @@ class CardSet(db.Model):
     
 class Card(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(16))
+    name = db.Column(db.String(100))
     description = db.Column(db.String(500))
     image = db.Column(db.String(100))
     
