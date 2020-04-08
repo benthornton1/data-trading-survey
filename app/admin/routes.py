@@ -184,9 +184,7 @@ def card_set(id, card_set):
         form.measure.data = card_set.measure
     
         for card in card_set.cards:
-            if card.description:
-                form.cards.append_entry(dict(card_name=card.name, desc='' if card.description is None else card.description, image='' if card.image is None else card.image))
-    
+            form.cards.append_entry(dict(card_name=card.name, desc='' if card.description is None else card.description, image='' if card.image is None else card.image))
     return render_template('admin/card_set.html', form=form)
 
 

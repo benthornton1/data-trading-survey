@@ -13,6 +13,7 @@ class DefaultConfig(object):
     MAIL_USE_TLS=os.environ.get('FLASK_PROJECT_MAIL_USE_TLS') is not None
     MAIL_USERNAME=os.environ.get('FLASK_PROJECT_MAIL_USERNAME')
     MAIL_PASSWORD=os.environ.get('FLASK_PROJECT_MAIL_PASSWORD')
+    ADMIN_EMAILS=[os.environ.get('ADMIN_EMAIL')]
     
 class ProductionConfig(DefaultConfig):
     SQLALCHEMY_DATABASE_URI = os.environ.get('FLASK_PROJECT_PRODUCTION_DATABASE')
@@ -22,13 +23,10 @@ class ProductionConfig(DefaultConfig):
 class DevelopmentConfig(DefaultConfig):
     SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'app.db')
     DEBUG = True
-    TESTING = False
-    WTF_CSRF_ENABLED = True
 
 class TestConfig(DefaultConfig):
     USE_RELOADER = False
     TESTING = True
     DEBUG = True
     WTF_CSRF_ENABLED = False
-    SQLALCHEMY_ECHO=False
     SQLALCHEMY_DATABASE_URI = 'sqlite://'
