@@ -53,7 +53,7 @@ def upgrade():
     )
     op.create_table('card',
     sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('name', sa.String(length=16), nullable=True),
+    sa.Column('name', sa.String(length=100), nullable=True),
     sa.Column('description', sa.String(length=500), nullable=True),
     sa.Column('image', sa.String(length=100), nullable=True),
     sa.Column('Admin', sa.Integer(), nullable=True),
