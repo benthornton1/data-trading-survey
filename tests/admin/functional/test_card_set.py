@@ -8,6 +8,7 @@ from app.admin.forms import CardForm, CardSetForm
 from app.models import Card, CardSet, Study
 from tests.helpers import create_admin, create_card_set, create_study, login
 
+
 def test_create_valid_card_set(client, init_database):
     """
     GIVEN a Flask application
@@ -202,7 +203,7 @@ def test_edit_future_card_set(client, init_database):
         study = create_study(client, creator=admin, card_set_x=card_set, start_date=date.today()+timedelta(days=3))
 
         response = client.get(url_for('admin.card_set', id=study.card_set_x.id), follow_redirects=True)
-
+        
         assert response.status_code == 200
         for card in card_set.cards:
             assert bytes(card.name, 'utf-8') in response.data

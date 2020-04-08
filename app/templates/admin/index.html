@@ -77,8 +77,10 @@
                     <button type="button" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#delete-study-{{study.id}}-modal">
                             Delete
                         </button>
-                    <a class="btn btn-warning btn-sm float-right" href="{{ url_for('responses.general', id=study.id) }}">Responses</a>
-                        <div class="modal fade confirm-delete" id="delete-study-{{study.id}}-modal" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                    {% if study.responses|length > 0 %}
+                        <a class="btn btn-warning btn-sm float-right" href="{{ url_for('responses.general', id=study.id) }}">Responses</a>
+                    {% endif %}    
+                    <div class="modal fade confirm-delete" id="delete-study-{{study.id}}-modal" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="staticBackdropLabel" aria-hidden="true">
                             <div class="modal-dialog" role="document">
                               <div class="modal-content">
                                 <div class="modal-header">
