@@ -12,6 +12,7 @@ from app.study import bp
 from app.study.decorators import *
 from app.study.forms import UserInfoForm
 
+
 @bp.route('/index')
 @bp.route('/')
 @login_required
@@ -39,6 +40,7 @@ def study(id, study):
 
         db.session.commit()
 
+        
         return dict(url=url_for('study.complete'))
     
     return render_template('study/study.html', study=study, card_set_x=study.card_set_x, card_set_y=study.card_set_y, creator_id=study.creator_id)

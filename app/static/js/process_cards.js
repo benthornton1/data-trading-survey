@@ -18,12 +18,6 @@ $(document).ready(function(){
         $( "#sortable-x #sortable-y" ).disableSelection();
     });
 
-    $(".sortable-y").each(function(){
-        if($.trim($(this).html())==''){
-            var tr_height = $(this).parent().height();
-            $(this).css("height",tr_height);
-        }
-    });
 
     $("a#submit").click(function(){
         	
@@ -41,51 +35,47 @@ $(document).ready(function(){
 
         $(".cards-row").each(function(){
             var row = $(this).attr("row")
+            cards_y[row] = []
             $(".card", $(this)).each(function(){
                 var card_id = parseInt($(this).attr("card_id"));
                 var card_name = $(this).find(".title").text();
-                var card_img = ''
-                var card_desc = ''
-                if($(this).find(".img")){
-                    card_path = $(this).find(".img").attr("src").split('/');
-                    card_img = card_path[card_path.length-1]
+                var card_img = ""
+                var card_desc = ""
+                if($(this).find(".img") != ""){
+                    card_path = $(this).find(".img").attr("src")
+                    if(card_path !== "undefined" ){
+                        card_path_split = card_path.split('/')
+                        card_img = card_path_split[card_path_split.length-1]
+                    }
                 }
                 if ($(this).find(".description").attr("title")){
                     card_desc = $(this).find(".title").attr("title");
                 }
-                card = {'id':card_id, 'name':card_name, 'image':card_img, 'description':card_desc}
-                if(row in cards_y){    
-                    cards_y[row].push(card)
-                } else {
-                    cards_y[row] = []
-                    cards_y[row].push(card)
-                }
-                
+                card = {'id':card_id, 'name':card_name, 'image':card_img, 'description':card_desc} 
+                cards_y[row].push(card)
             })        
         });
 
         $(".cards-col").each(function(){
             var col = $(this).attr("col")
+            cards_x[col] = []
             $(".card", $(this)).each(function(){
                 var card_id = parseInt($(this).attr("card_id"))
                 var card_name = $(this).find(".title").text()
-                var card_img = ''
-                var card_desc = ''
+                var card_img = ""
+                var card_desc = ""
                 if($(this).find(".img")){
-                    card_path = $(this).find(".img").attr("src").split('/')
-                    card_img = card_path[card_path.length-1]
+                    card_path = $(this).find(".img").attr("src")
+                    if(typeof card_path !== "undefined" ){
+                        card_path_split = card_path.split('/')
+                        card_img = card_path_split[card_path_split.length-1]
+                    }
                 }
                 if ($(this).find(".description").attr("title")){
                     card_desc = $(this).find(".title").attr("title")
                 }
                 card = {'id':card_id, 'name':card_name, 'image':card_img, 'description':card_desc}
-                if(col in cards_x){
-                    cards_x[col].push(card)
-                } else {
-                    cards_x[col] = []
-                    cards_x[col].push(card)
-                }
-                
+                cards_x[col].push(card)
             });        
         });
 
@@ -99,7 +89,7 @@ $(document).ready(function(){
                 var col_row_split = col_row.split("_");
                 var col = col_row_split[0].concat("_",col_row_split[1]);
                 var row = col_row_split[2].concat("_", col_row_split[3]); 
-                if((col in cards_x)&&(row in cards_y)&&(isNaN(value))&&(!($(this).find(".alert").length))){
+                if((cards_x[col].length !== 0 )&&(cards_y[row].length !== 0)&&(isNaN(value))&&(!($(this).find(".alert").length))){
                     $('<span class="error" style="color: red;"><b>Must contain an integer.</b></span>').insertAfter(this);
                 }
                 var data_value = {}
@@ -123,10 +113,8 @@ $(document).ready(function(){
         var url = $(this).attr('url');
         var csrf_token = $(this).attr('csrf');
 
-        var data = {}
-        data['cards_x'] = cards_x
-        data['cards_y'] = cards_y
-        data['data_values'] = data_values
+        var data = {'cards_x':cards_x, 'cards_y':cards_y, 'data_values':data_values}
+
 
         $.ajaxSetup({
             beforeSend: function(xhr, settings) {

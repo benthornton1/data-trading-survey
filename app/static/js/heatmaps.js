@@ -14,8 +14,12 @@ $(document).ready(function(){
         var url = $(this).attr("url");
         var csrf_token = $(this).attr("csrf_token");
 
-        data = {'card_x_id':card_x_id, 'card_y_id':card_y_id, 'label_id':label_id, 'is_count':is_count, 'type':type}
-    
+        var data = {}
+        if(is_count == true){
+            data = {'card_x_id':card_x_id, 'card_y_id':card_y_id, 'label_id':null, 'is_count':is_count, 'type':type}
+        } else {
+            data = {'card_x_id':card_x_id, 'card_y_id':card_y_id, 'label_id':label_id, 'is_count':is_count, 'type':type}
+        }
         $.ajaxSetup({
             beforeSend: function(xhr, settings) {
                 if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
