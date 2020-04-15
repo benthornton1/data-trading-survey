@@ -21,6 +21,7 @@ from app.responses.parsing.create_pdf import create_pdf as gen_pdf
 from app.responses.parsing.position_count import get_card_x_responses, get_card_y_responses
 
 
+
 @bp.route('/<int:id>')
 @login_required
 @admin_required
@@ -83,7 +84,9 @@ def compare_responses(id, study):
                 response_2 = munchify(avg(study))
             else:
                 response_2 = Response.query.filter(Response.study_id==study.id, Response.id==int(data.get('response_id_2'))).first()
+            
             return dict(data=render_template('responses/response.html', data_value_labels=study.data_value_labels, card_set_x=study.card_set_x, card_set_y=study.card_set_y, study=study, responses=[response_1, response_2]))
+        
         except:
             flash('Invalid choice.')
             

@@ -30,8 +30,12 @@ table td {
 .sortable-y .card {
     margin-left:auto;
 }
+
 .sortable-y {
-    display:flex;justify-content:flex-end;align-items:center;width:100%;height:100%;
+    display:flex;
+    flex-direction:row-reverse;
+    flex-wrap: wrap;
+    width: 50vw;
 }
 
 #card-table td{

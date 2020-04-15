@@ -6,7 +6,7 @@
             {% for row in response.cards_y %}
             {% set row_loop = loop %}
             <tr>
-                   <td style="border:none;" class="sortable-y droptrue2 d-flex flex-nowrap cards-row">
+                   <td style="border:none;" class="sortable-y droptrue2 cards-row">
                         {% for row, cards in response.cards_y.items() %}
                             {% set row = row.split('_')[1] %}
                             {% if row|int == study.number_of_rows-row_loop.index %}
@@ -122,7 +122,7 @@
                 {% for row in response.cards_y %}
                 {% set row_loop = loop %}
                 <tr>
-                       <td style="border:none;" class="sortable-y droptrue2 d-flex flex-nowrap cards-row">
+                       <td style="border:none;" class="sortable-y droptrue2 cards-row">
                             {% for row, cards in response.cards_y.items() %}
                                 {% set row = row.split('_')[1] %}
                                 {% if row|int == study.number_of_rows-row_loop.index %}

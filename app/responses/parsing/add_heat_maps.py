@@ -35,6 +35,7 @@ class CreateHeatMaps(ABC):
 
         for heat_map in heat_maps:
             data = {'col':[], 'row':[], 'values':[]}
+            
             for col_row,value in heat_map.values.items():
                 split = col_row.split('_')
                 data['col'].append(split[1])
