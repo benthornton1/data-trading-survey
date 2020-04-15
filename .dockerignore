@@ -6,16 +6,6 @@
 *.pyc
 __pycache__
 
-# app specific
-migrations_dev/
-app/static/img/card_images/
-app/static/img/study_images/
-app/static/pdf/
-logs/
-test2.py
-test3.py
-test4.py
-app.db
 
 # Distribution / packaging
 .Python
