@@ -9,10 +9,8 @@ from bokeh.transform import transform
 import pandas as pd
 from sqlalchemy import desc
 
-
 from app import db
 from app.models import HeatMap, Card
-
 
 class CreateHeatMaps(ABC):
     def __init__(self):
@@ -43,7 +41,7 @@ class CreateHeatMaps(ABC):
                 data['values'].append(value)
             df = pd.DataFrame(data=data)
             source = ColumnDataSource(df)
-            mapper = LinearColorMapper(palette=palette, low=0, high=1)        
+            mapper = LinearColorMapper(palette=palette, low=0, high=len(study.responses))        
             
             x_range = list(range(study.number_of_columns))
             y_range = list(range(study.number_of_rows))
