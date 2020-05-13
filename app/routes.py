@@ -8,6 +8,6 @@ def index():
     return redirect(url_for("auth.login"))
 
 
-@bp.route
+@bp.route("/tests")
 def tests():
     return render_template("tests.html")
