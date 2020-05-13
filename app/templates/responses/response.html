@@ -3,64 +3,63 @@
     <h3>Average Response</h3>
     <div id="card-table" class="table-responsive">
         <table class="table table-bordered">
-            {% for row in response.cards_y %}
+            {% for row in range(study.number_of_rows) %}
             {% set row_loop = loop %}
             <tr>
                    <td style="border:none;" class="sortable-y droptrue2 cards-row">
-                        {% for row, cards in response.cards_y.items() %}
-                            {% set row = row.split('_')[1] %}
-                            {% if row|int == study.number_of_rows-row_loop.index %}
-                                {% for card in cards %}
-                                    <div>
-                                        <div class="card">
-                                            {% if card.image %}
-                                                <img class="card-img-top" src="{{ url_for('static', filename='img/card_images/'+study.creator_id|string+'/'+card.image) }}" alt="Card Image">
+                    {% for card_position in response.card_positions %}
+                        {% if card_position.card.card_set == study.card_set_y %}
+                            {% if card_position.position == study.number_of_rows-row_loop.index %}
+                                <div>
+                                    <div class="card">
+                                        {% if card_position.card.image %}
+                                            <img class="card-img-top" src="{{ url_for('static', filename='img/card_images/'+study.creator_id|string+'/'+card_position.card.image) }}" alt="Card Image">
+                                        {% endif %}
+                                        <div class="card-body">
+                                            {% if card_position.card.description %}
+                                            <p class="card-text" data-toggle="tooltip" data-placement="top" title="{{ card_position.card.description }}">{{ card_position.card.name }}</p>       
+                                            {% else %}
+                                                <p class="card-text">{{ card_position.card.name }}</p>
                                             {% endif %}
-                                            <div class="card-body">
-                                                {% if card.description %}
-                                                    <p class="card-text" data-toggle="tooltip" data-placement="top" title="{{ card.description }}">{{ card.name }}</p>       
-                                                {% else %}
-                                                    <p class="card-text">{{ card.name }}</p>
-                                                {% endif %}
-                                            </div>
                                         </div>
                                     </div>
-                                {% endfor %}
+                                </div>
                             {% endif %}
-                        {% endfor %}
+                        {% endif %}
+                    {% endfor %}
                         
                     </td>
                     {% if loop.index0 == 0%}
                         <td style="border:none; vertical-align:middle">
-                            <p>Highest {{ card_set_y.measure}} </p>
+                            <p>Highest {{ study.card_set_y.measure}} </p>
                         </td>
                     {% elif loop.index0 == study.number_of_rows-1 %}
                         <td style="border:none; vertical-align:middle">
-                            <p>Lowest {{ card_set_y.measure }}</p>
+                            <p>Lowest {{ study.card_set_y.measure }}</p>
                         </td>
                     {% else %}
                         <td style="border:none;"></td>
                     {% endif%}
                        
-                    {% for data_value in range(0,study.number_of_columns) %}
-                        {% for colrow,values in response.data_values.items() %}
-                        {% set col = colrow.split('_')[1] %}
-                        {% set row = colrow.split('_')[3] %}
+                    {% for column in range(0,study.number_of_columns) %}
                     
-                            {% if col|int == data_value and row|int == study.number_of_rows-row_loop.index %}
-                            <td style="vertical-align: middle;" col-row="col-{{ loop.index0 }}-row-{{ study.number_of_rows-row_loop.index }}">
-                                {% for value in values %}
-                                <form>
-                                    <div class="form-group">
-                                        <label>{{ value.label }}</label>
-                                        <input type="number" col-row="col-{{ loop.index0 }}-row-{{ study.number_of_rows-row_loop.index }}" class="data_values form-control form-control-sm" value="{{ value.value }}">    
-                                    </div>
-                                </form>
-                                {% endfor %}
-                            </td>
-                            {% endif %}
+                    <td style="vertical-align: middle;">
+                        {% for data_value in response.data_values %}
+                    
+                
+                            {% if data_value.column == column and data_value.row == study.number_of_rows-row_loop.index %}
+                                
+                                    
+                                    <form>
+                                        <div class="form-group">
+                                            <label>{{ data_value.data_value_label.label }}</label>
+                                            <input type="number"  class="data_values form-control form-control-sm" value="{{ data_value.value }}">    
+                                        </div>
+                                    </form>
+                            {% endif %} 
                         {% endfor %}
-    
+                    </td>
+
                     {% endfor %}
                 </tr>
             {% endfor %}
@@ -73,11 +72,11 @@
                {% for col in range(0, study.number_of_columns) %}
                {% if loop.index0==0 %}
                    <td style="border:none; text-align:center;">
-                       Lowest {{ card_set_x.measure }}
+                       Lowest {{ study.card_set_x.measure }}
                    </td>
                {% elif loop.index0 == study.number_of_columns-1 %}
                    <td style="border:none; text-align:center;">
-                       Highest {{ card_set_x.measure }}
+                       Highest {{ study.card_set_x.measure }}
                    </td>
                {% else %}
                    <td style="border:none;"></td>
@@ -85,30 +84,32 @@
                {% endfor %}
            </tr>
            <tr>
-               <td style="border: none;">
-               </td>
-               <td style="border: none;">
-               </td>
-               {% for col,cards in response.cards_x.items() %}
+                <td style="border: none;">
+                </td>
+                <td style="border: none;">
+                </td>
+                {% for column in range(study.number_of_columns) %}
                     <td style="border:none;" class="sortable-x droptrue1 cards-col">
-                        {% for card in cards %}
-                            <div>
-                                <div class="card">
-                                    {% if card.image %}
-                                        <img class="card-img-top" src="{{ url_for('static', filename='img/card_images/'+study.creator_id|string+'/'+card.image) }}" alt="Card Image">
-                                    {% endif %}
-                                    <div class="card-body">
-                                        {% if card.description %}
-                                            <p class="card-text" data-toggle="tooltip" data-placement="top" title="{{ card.description }}">{{ card.name }}</p>       
-                                        {% else %}
-                                            <p class="card-text">{{ card.name }}</p>
-                                        {% endif %}
+                        {% for card_position in response.card_positions %}
+                            {% if (card_position.card.card_set == study.card_set_x) and (card_position.position == column) %}
+                                    <div>
+                                        <div class="card">
+                                            {% if card_position.card.image %}
+                                                <img class="card-img-top" src="{{ url_for('static', filename='img/card_images/'+study.creator_id|string+'/'+card_position.card.image) }}" alt="Card Image">
+                                            {% endif %}
+                                            <div class="card-body">
+                                                {% if card_position.card.description %}
+                                                    <p class="card-text" data-toggle="tooltip" data-placement="top" title="{{ card_position.card.description }}">{{ card_position.card.name }}</p>       
+                                                {% else %}
+                                                    <p class="card-text">{{ card_position.card.name }}</p>
+                                                {% endif %}
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
-                            </div>
-                        {% endfor%}
+                            {% endif %}
+                        {% endfor %}
                     </td>
-               {% endfor %}
+                {% endfor %}
            </tr>
         </table>
     </div>
@@ -116,67 +117,66 @@
 
 {% if responses|length > 0 %}
     {% for response in responses %}
-        <h3>Response User ID:{{ response.participant_id }}</h3>
+        <h3>{{ response.participant.username }}'s response</h3>
         <div id="card-table" class="table-responsive">
             <table class="table table-bordered">
-                {% for row in response.cards_y %}
+                {% for row in range(study.number_of_rows) %}
                 {% set row_loop = loop %}
                 <tr>
                        <td style="border:none;" class="sortable-y droptrue2 cards-row">
-                            {% for row, cards in response.cards_y.items() %}
-                                {% set row = row.split('_')[1] %}
-                                {% if row|int == study.number_of_rows-row_loop.index %}
-                                    {% for card in cards %}
-                                        <div>
-                                            <div class="card">
-                                                {% if card.image %}
-                                                    <img class="card-img-top" src="{{ url_for('static', filename='img/card_images/'+study.creator_id|string+'/'+card.image) }}" alt="Card Image">
+                        {% for card_position in response.card_positions %}
+                            {% if card_position.card.card_set == study.card_set_y %}
+                                {% if card_position.position == study.number_of_rows-row_loop.index %}
+                                    <div>
+                                        <div class="card">
+                                            {% if card_position.card.image %}
+                                                <img class="card-img-top" src="{{ url_for('static', filename='img/card_images/'+study.creator_id|string+'/'+card_position.card.image) }}" alt="Card Image">
+                                            {% endif %}
+                                            <div class="card-body">
+                                                {% if card_position.card.description %}
+                                                <p class="card-text" data-toggle="tooltip" data-placement="top" title="{{ card_position.card.description }}">{{ card_position.card.name }}</p>       
+                                                {% else %}
+                                                    <p class="card-text">{{ card_position.card.name }}</p>
                                                 {% endif %}
-                                                <div class="card-body">
-                                                    {% if card.description %}
-                                                        <p class="card-text" data-toggle="tooltip" data-placement="top" title="{{ card.description }}">{{ card.name }}</p>       
-                                                    {% else %}
-                                                        <p class="card-text">{{ card.name }}</p>
-                                                    {% endif %}
-                                                </div>
                                             </div>
                                         </div>
-                                    {% endfor %}
+                                    </div>
                                 {% endif %}
-                            {% endfor %}
+                            {% endif %}
+                        {% endfor %}
                             
                         </td>
                         {% if loop.index0 == 0%}
                             <td style="border:none; vertical-align:middle">
-                                <p>Highest {{ card_set_y.measure}} </p>
+                                <p>Highest {{ study.card_set_y.measure}} </p>
                             </td>
                         {% elif loop.index0 == study.number_of_rows-1 %}
                             <td style="border:none; vertical-align:middle">
-                                <p>Lowest {{ card_set_y.measure }}</p>
+                                <p>Lowest {{ study.card_set_y.measure }}</p>
                             </td>
                         {% else %}
                             <td style="border:none;"></td>
                         {% endif%}
                            
-                        {% for data_value in range(0,study.number_of_columns) %}
-                            {% for colrow,values in response.data_values.items() %}
-                            {% set col = colrow.split('_')[1] %}
-                            {% set row = colrow.split('_')[3] %}
+                        {% for column in range(0,study.number_of_columns) %}
                         
-                                {% if col|int == data_value and row|int == study.number_of_rows-row_loop.index %}
-                                <td style="vertical-align: middle;" col-row="col-{{ loop.index0 }}-row-{{ study.number_of_rows-row_loop.index }}">
-                                    {% for value in values %}
-                                    <form>
-                                        <div class="form-group">
-                                            <label>{{ value.label }}</label>
-                                            <input type="number" col-row="col-{{ loop.index0 }}-row-{{ study.number_of_rows-row_loop.index }}" class="data_values form-control form-control-sm" value="{{ value.value }}">    
-                                        </div>
-                                    </form>
-                                    {% endfor %}
-                                </td>
-                                {% endif %}
+                        <td style="vertical-align: middle;">
+                            {% for data_value in response.data_values %}
+                        
+                    
+                                {% if data_value.column == column and data_value.row == study.number_of_rows-row_loop.index %}
+                                    
+                                        
+                                        <form>
+                                            <div class="form-group">
+                                                <label>{{ data_value.data_value_label.label }}</label>
+                                                <input type="number"  class="data_values form-control form-control-sm" value="{{ data_value.value }}">    
+                                            </div>
+                                        </form>
+                                {% endif %} 
                             {% endfor %}
-        
+                        </td>
+    
                         {% endfor %}
                     </tr>
                 {% endfor %}
@@ -189,11 +189,11 @@
                    {% for col in range(0, study.number_of_columns) %}
                    {% if loop.index0==0 %}
                        <td style="border:none; text-align:center;">
-                           Lowest {{ card_set_x.measure }}
+                           Lowest {{ study.card_set_x.measure }}
                        </td>
                    {% elif loop.index0 == study.number_of_columns-1 %}
                        <td style="border:none; text-align:center;">
-                           Highest {{ card_set_x.measure }}
+                           Highest {{ study.card_set_x.measure }}
                        </td>
                    {% else %}
                        <td style="border:none;"></td>
@@ -201,30 +201,32 @@
                    {% endfor %}
                </tr>
                <tr>
-                   <td style="border: none;">
-                   </td>
-                   <td style="border: none;">
-                   </td>
-                   {% for col,cards in response.cards_x.items() %}
+                    <td style="border: none;">
+                    </td>
+                    <td style="border: none;">
+                    </td>
+                    {% for column in range(study.number_of_columns) %}
                         <td style="border:none;" class="sortable-x droptrue1 cards-col">
-                            {% for card in cards %}
-                                <div>
-                                    <div class="card">
-                                        {% if card.image %}
-                                            <img class="card-img-top" src="{{ url_for('static', filename='img/card_images/'+study.creator_id|string+'/'+card.image) }}" alt="Card Image">
-                                        {% endif %}
-                                        <div class="card-body">
-                                            {% if card.description %}
-                                                <p class="card-text" data-toggle="tooltip" data-placement="top" title="{{ card.description }}">{{ card.name }}</p>       
-                                            {% else %}
-                                                <p class="card-text">{{ card.name }}</p>
-                                            {% endif %}
+                            {% for card_position in response.card_positions %}
+                                {% if (card_position.card.card_set == study.card_set_x) and (card_position.position == column) %}
+                                        <div>
+                                            <div class="card">
+                                                {% if card_position.card.image %}
+                                                    <img class="card-img-top" src="{{ url_for('static', filename='img/card_images/'+study.creator_id|string+'/'+card_position.card.image) }}" alt="Card Image">
+                                                {% endif %}
+                                                <div class="card-body">
+                                                    {% if card_position.card.description %}
+                                                        <p class="card-text" data-toggle="tooltip" data-placement="top" title="{{ card_position.card.description }}">{{ card_position.card.name }}</p>       
+                                                    {% else %}
+                                                        <p class="card-text">{{ card_position.card.name }}</p>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
                                         </div>
-                                    </div>
-                                </div>
-                            {% endfor%}
+                                {% endif %}
+                            {% endfor %}
                         </td>
-                   {% endfor %}
+                    {% endfor %}
                </tr>
             </table>
         </div>

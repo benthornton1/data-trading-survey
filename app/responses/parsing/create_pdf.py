@@ -8,23 +8,22 @@ from munch import munchify
 import pdfkit
 from sqlalchemy.orm import session
 
-from app.models import Response
+from app.models import Response2
 from app.responses.parsing.average_response2 import average_response as ggh
-
 
 def create_pdf(
     study, all_responses=False, average_response2=False, response_ids=False
 ):
     average_response_pdf = None
     responses_pdf = []
-    if average_response2 == True:
-        average_response_pdf = munchify(ggh(study))
-    if all_responses == True:
-        responses_pdf = study.responses
-    if response_ids != False:
+    if average_response2:
+        average_response_pdf = ggh(study)
+    if all_responses:
+        responses_pdf = study.responses_2
+    if response_ids:
         responses = (
-            Response.query.filter(Response.id.in_(response_ids))
-            .filter(Response.study_id == study.id)
+            Response2.query.filter(Response2.id.in_(response_ids))
+            .filter(Response2.study == study)
             .all()
         )
         responses_pdf = responses
@@ -32,8 +31,6 @@ def create_pdf(
     html = render_template(
         "responses/response.html",
         study=study,
-        card_set_x=study.card_set_x,
-        card_set_y=study.card_set_y,
         average_response=average_response_pdf,
         responses=responses_pdf,
     )

@@ -37,7 +37,6 @@ from app.models import (
     User,
     UserGroup,
 )
-from app.responses.parsing.find_combinations import find_combinations
 
 
 @bp.route("")
@@ -101,10 +100,6 @@ def study(id, study):
         study.name = form.name.data
         study.description = form.desc.data
 
-        old_heat_maps = HeatMap.query.filter_by(study_id=id).all()
-        for old_heat_map in old_heat_maps:
-            db.session.delete(old_heat_map)
-        db.session.commit()
 
         if form.image.data is not None:
             file = form.image.data
@@ -145,7 +140,6 @@ def study(id, study):
         study.end_date = form.end_date.data
 
         try:
-            find_combinations(study)
             db.session.commit()
             flash("Study Created/ Updated Succesfully")
             return redirect(url_for("admin.index"))
@@ -229,10 +223,6 @@ def card_set(id, card_set):
         card_set.cards = card_list
 
         try:
-            for study in card_set.studies_x:
-                find_combinations(study)
-            for study in card_set.studies_y:
-                find_combinations(study)
             db.session.commit()
             flash("Card Set Created/ Updated Succesfully.")
             return redirect(url_for("admin.index"))
