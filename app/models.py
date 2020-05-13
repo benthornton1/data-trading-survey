@@ -87,6 +87,7 @@ class DataValueLabel(db.Model):
     creator_id = db.Column("Admin", db.ForeignKey("user.id"))
 
     heat_maps = db.relationship("HeatMap", backref="data_value_label")
+    data_values = db.relationship("DataValue", backref="data_value_label")
 
 
 class Study(db.Model):
@@ -121,7 +122,10 @@ class Study(db.Model):
     responses = db.relationship(
         "Response", backref="study", cascade="all, delete"
     )
-
+    responses_2 = db.relationship(
+        "Response2", backref="study", cascade="all,delete"
+    )
+    
     def __repr__(self):
         return str(self.name)
 
@@ -148,6 +152,8 @@ class Card(db.Model):
     creator_id = db.Column("Admin", db.ForeignKey("user.id"))
     card_set_id = db.Column(db.Integer, db.ForeignKey("card_set.id"))
 
+    positions = db.relationship("CardPosition", backref='card')
+    
     def __repr__(self):
         return str(self.name)
 
@@ -193,6 +199,38 @@ class HeatMap(db.Model):
         return str(self.id)
 
 
+class Response2(db.Model):
+    __tablename__ = 'response_2'
+    id = db.Column(db.Integer, primary_key=True)
+    
+    study_id = db.Column("Study", db.ForeignKey("study.id"))
+    participant_id = db.Column("Participant", db.ForeignKey("user.id"))
+    
+    card_positions = db.relationship('CardPosition', backref='response')
+    data_values = db.relationship('DataValue', backref='response')
+    participant = db.relationship(
+        "Participant", foreign_keys=participant_id, backref="response2"
+    )
+    
+    
+class CardPosition(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    position = db.Column(db.Integer)
+    
+    card_id = db.Column("Card", db.ForeignKey("card.id"))
+    response_id = db.Column("Response2", db.ForeignKey("response_2.id"))
+    
+
+class DataValue(db.Model):
+    id = db.Column(db.Integer, primary_key=True)    
+    column = db.Column(db.Integer)
+    row = db.Column(db.Integer)
+    value = db.Column(db.Integer)  
+
+    data_value_label_id = db.Column("DataValueLabel", db.ForeignKey("data_value_label.id"))
+    response_id = db.Column("Response2", db.ForeignKey("response_2.id"))
+    
+    
 @login.user_loader
 def load_user(id):
     return User.query.get(int(id))

@@ -55,7 +55,6 @@
         
         <div class="form-group col-md-6 align-self-end text-white">
             <a class="btn btn-primary add-heatmap" url="{{ url_for('responses.heat_maps', id=study.id) }}" csrf_token="{{ csrf_token() }}" type="one">Add</a>
-            <a class="btn btn-primary add-heatmap" url="{{ url_for('responses.heat_maps', id=study.id) }}" csrf_token="{{ csrf_token() }}" type="all">Add All</a>
             <a id="remove-all-heatmaps" class="btn btn-danger">Remove All</a>
         </div>
         

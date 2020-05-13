@@ -5,9 +5,9 @@ from bokeh.plotting import figure
 from munch import munchify
 
 from app.models import Card
+import pdb
 
-
-def get_card_x_responses(study, responses):
+def get_card_x_responses(study):
 
     columns = [str(i) for i in range(study.number_of_columns)]
     cards = []
@@ -16,15 +16,14 @@ def get_card_x_responses(study, responses):
         cards.append(card.name)
         cards_x_data[card.name] = [0 for x in range(study.number_of_columns)]
 
-    for response in responses:
-        cards_x = munchify(response.cards_x)
-        for col, cards2 in cards_x.items():
-            for card in cards2:
-                col2 = col.split("_")[1]
-                cards_x_data[card.name][int(col2)] += 1
+    for response in study.responses_2:
+        for card_position in response.card_positions:
+            if card_position.card.card_set == study.card_set_x:
+                cards_x_data[card_position.card.name][card_position.position] += 1
+                
     x = [(column, card) for column in columns for card in cards]
     lists = list(cards_x_data.values())
-    counts = sum(zip(*lists), ())  # like an hstack
+    counts = sum(zip(*lists), ())  
 
     title = "Count of each card in card set {} in each column".format(
         study.card_set_x.name
@@ -50,7 +49,7 @@ def get_card_x_responses(study, responses):
     return script, div
 
 
-def get_card_y_responses(study, responses):
+def get_card_y_responses(study):
 
     rows = [str(i) for i in range(study.number_of_rows)]
     cards = []
@@ -60,16 +59,15 @@ def get_card_y_responses(study, responses):
         cards.append(card.name)
         cards_y_data[card.name] = [0 for x in range(study.number_of_rows)]
 
-    for response in responses:
-        cards_y = munchify(response.cards_y)
-        for row, cards2 in cards_y.items():
-            for card in cards2:
-                row2 = row.split("_")[1]
-                cards_y_data[card.name][int(row2)] += 1
+    
+    for response in study.responses_2:
+        for card_position in response.card_positions:
+            if card_position.card.card_set == study.card_set_y:
+                cards_y_data[card_position.card.name][card_position.position] += 1
 
     x = [(row, card) for row in rows for card in cards]
     lists = list(cards_y_data.values())
-    counts = sum(zip(*lists), ())  # like an hstack
+    counts = sum(zip(*lists), ()) 
     title = "Count of each card in card set {} in each row".format(
         study.card_set_y.name
     )

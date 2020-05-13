@@ -15,187 +15,184 @@ import pandas as pd
 from sqlalchemy import desc
 
 from app import db
-from app.models import HeatMap, Card
+from app.models import HeatMap, Card, Response2, CardPosition, DataValue
+import pdb
 
-
-class CreateHeatMaps(ABC):
-    def __init__(self):
+class CreateHeatMap(ABC):
+    def __init__(self, study):
+        self.study = study
+        self.palette = tuple(reversed(plasma(10)))
         self.plots = []
+        self.mapper = None
 
-    def add(self, study, is_count, card_x_id=None, card_y_id=None, label=None):
-        heat_maps = self.get_heat_maps(
-            study_id=study.id,
-            is_count=is_count,
-            card_x_id=card_x_id,
-            card_y_id=card_y_id,
-            label=label,
-        )
-        self.create_plots(study, heat_maps, is_count)
+    def add(self, card_x, card_y, data_value_label):
+        self.create_plots(card_x, card_y, data_value_label)
 
     @abstractmethod
-    def get_heat_maps(
-        self, study_id, is_count, card_x_id=None, card_y_id=None, label=None
-    ):
+    def create_plots(self, card_x, card_y, data_value_label):
         pass
+    
+    def create_heat_map(self, title, tooltips, card_x, card_y, data):
+        
+        x_range = list(range(self.study.number_of_columns))
+        y_range = list(range(self.study.number_of_rows))
+        
+        df = pd.DataFrame(data=data)
+        source = ColumnDataSource(df)
 
-    def create_plots(self, study, heat_maps, is_count):
-        heat_map_plots = []
-        card_set_x = study.card_set_x
-        card_set_y = study.card_set_y
-        palette = tuple(reversed(plasma(10)))
-
-        for heat_map in heat_maps:
-            data = {"col": [], "row": [], "values": []}
-
-            for col_row, value in heat_map.values.items():
-                split = col_row.split("_")
-                data["col"].append(split[1])
-                data["row"].append(split[3])
-                if value == 0:
-                    data["values"].append(None)
-                else:
-                    data["values"].append(value)
-            if heat_map.is_count is True:
-                mapper = LinearColorMapper(
-                    palette=palette, low=0, high=len(study.responses)
-                )
-                tooltips_list = list(map(str,data['values']))
-            else:
-                mapper = LinearColorMapper(palette=palette, low=0, high=1)
-                count_heat_map = (
-                    HeatMap.query.filter(
-                        HeatMap.card_x_id == heat_map.card_x_id
-                    )
-                    .filter(HeatMap.card_y_id == heat_map.card_y_id)
-                    .filter(HeatMap.study_id == heat_map.study_id)
-                    .first_or_404()
-                )
-                count_values = []
-                for col_row, value in count_heat_map.values.items():
-                    split = col_row.split("_")
-                    count_values.append(value)
-                new_values = []
-                for i, j in zip(data["values"], count_values):
-                    if j != 0 and i is None:
-                        new_values.append(0)
-                    elif j != 0 and i is not None:
-                        new_values.append(i/j)
-                    else:
-                        new_values.append(None)
-                tooltips_list = list(map(str, new_values))
-                data["values"] = new_values
-            df = pd.DataFrame(data=data)
-            source = ColumnDataSource(df)
-
-            x_range = list(range(study.number_of_columns))
-            y_range = list(range(study.number_of_rows))
-
-            if is_count:
-                title = "Count"
-            else:
-                title = heat_map.data_value_label.label
-            
-            TOOLTIPS = """
-                <div>
-                    Count: @values
-                </div>
-            """
-            
-            p = figure(
-                title=title,
-                plot_width=300,
-                plot_height=300,
-                toolbar_location=None,
-                tools="",
-                x_range=[str(x) for x in x_range],
-                y_range=[str(y) for y in y_range],
-                x_axis_label=heat_map.card_x.name,
-                y_axis_label=heat_map.card_y.name,
-                tooltips=TOOLTIPS
-            )
-
-            p.rect(
-                x="col",
-                y="row",
-                width=1,
-                height=1,
-                source=source,
-                fill_color=transform("values", mapper),
-                line_color=None,
-            )
-            color_bar = ColorBar(
-                color_mapper=mapper,
-                location=(0, 0),
-                ticker=BasicTicker(desired_num_ticks=len(palette)),
-            )
-
-            p.add_layout(color_bar, "right")
-            p.axis.axis_line_color = None
-            p.axis.major_tick_line_color = None
-            p.axis.major_label_text_font_size = "5pt"
-            p.axis.major_label_standoff = 0
-            p.xaxis.major_label_orientation = 1.0
-
-            template = """
-                if(index==0){
-                    return 'Lowest %s'
-                } else if(index == ticks.length-1){
-                    return 'Highest %s'
-                } else {
-                    return tick
-                }
-            """
-            x_axis_format = template % (card_set_x.measure, card_set_x.measure)
-            y_axis_format = template % (card_set_y.measure, card_set_y.measure)
-            p.xaxis.formatter = FuncTickFormatter(code=x_axis_format)
-            p.yaxis.formatter = FuncTickFormatter(code=y_axis_format)
-            p.xaxis.group_text_font = "Helvetica Neue"
-            p.yaxis.group_text_font = "Helvetica Neue"
-
-            p.xaxis.axis_label_text_font = "Helvetica Neue"
-            p.yaxis.axis_label_text_font = "Helvetica Neue"
-            p.xaxis.axis_label_text_font_style = "normal"
-            p.yaxis.axis_label_text_font_style = "normal"
-
-            script_heatmap, div_heatmap = components(p)
-            heat_map_plots.append((script_heatmap, div_heatmap))
-
-        self.plots = heat_map_plots
-
-
-class CreateAllHeatMaps(CreateHeatMaps):
-    def get_heat_maps(
-        self, study_id, is_count, card_x_id=None, card_y_id=None, label=None
-    ):
-
-        heat_maps = (
-            db.session.query(HeatMap)
-            .filter(HeatMap.study_id == int(study_id))
-            .filter(HeatMap.is_count == is_count)
-            .join(Card, HeatMap.card_y_id == Card.id)
-            .order_by(desc(Card.name))
-            .all()
+        plot = figure(
+            title=title,
+            plot_width=400,
+            plot_height=400,
+            toolbar_location="above",
+            x_range=[str(x) for x in x_range],
+            y_range=[str(y) for y in y_range],
+            x_axis_label=card_x.name,
+            y_axis_label=card_y.name,
+            tooltips=tooltips,
         )
+        
+        plot.rect(
+            x="col",
+            y="row",
+            width=1,
+            height=1,
+            source=df,
+            fill_color={'field': 'values', 'transform': self.mapper},
+            line_color=None,
+        )
+        color_bar = ColorBar(
+            color_mapper=self.mapper,
+            location=(0, 0),
+            ticker=BasicTicker(desired_num_ticks=len(self.palette)),
+        )
+        plot.add_layout(color_bar, "right")
+        plot.axis.axis_line_color = None
+        plot.axis.major_tick_line_color = None
+        plot.axis.major_label_text_font_size = "5pt"
+        plot.axis.major_label_standoff = 0
+        plot.xaxis.major_label_orientation = 1.0
 
-        return heat_maps
+        template = """
+            if(index==0){
+                return 'Lowest %s'
+            } else if(index == ticks.length-1){
+                return 'Highest %s'
+            } else {
+                return tick
+            }
+        """
+        x_axis_format = template % (self.study.card_set_x.measure, self.study.card_set_x.measure)
+        y_axis_format = template % (self.study.card_set_y.measure, self.study.card_set_y.measure)
+        plot.xaxis.formatter = FuncTickFormatter(code=x_axis_format)
+        plot.yaxis.formatter = FuncTickFormatter(code=y_axis_format)
+        plot.xaxis.group_text_font = "Helvetica Neue"
+        plot.yaxis.group_text_font = "Helvetica Neue"
+
+        plot.xaxis.axis_label_text_font = "Helvetica Neue"
+        plot.yaxis.axis_label_text_font = "Helvetica Neue"
+        plot.xaxis.axis_label_text_font_style = "normal"
+        plot.yaxis.axis_label_text_font_style = "normal"
+
+        script_heatmap, div_heatmap = components(plot)
+        self.plots.append((script_heatmap, div_heatmap))
+    
+    def calculate_count(self, card_x, card_y):
+        values = {}
+                
+        for col in range(self.study.number_of_columns):
+            for row in range(self.study.number_of_rows):
+                values['col_'+str(col)+'_row_'+str(row)] = None
+        
+        for response in self.study.responses_2:
+            card_x_pos = CardPosition.query.filter(CardPosition.response_id==response.id).filter(CardPosition.card==card_x).first()
+            card_y_pos = CardPosition.query.filter(CardPosition.response_id==response.id).filter(CardPosition.card==card_y).first()
+            
+            if values['col_'+str(card_x_pos.position)+'_row_'+str(card_y_pos.position)] is None:
+                values['col_'+str(card_x_pos.position)+'_row_'+str(card_y_pos.position)] = 1
+            else:
+                values['col_'+str(card_x_pos.position)+'_row_'+str(card_y_pos.position)] += 1
+        
+        data = {"col": [], "row": [], "values": []}
+        
+        for col_row, value in values.items():
+            data['col'].append(int(col_row.split("_")[1]))
+            data['row'].append(int(col_row.split("_")[3]))
+            data['values'].append(value)
+        
+        return data
+    
+    
+    def calculate_price(self, card_x, card_y, data_value_label):
+        values = {}
+           
+        for col in range(self.study.number_of_columns):
+            for row in range(self.study.number_of_rows):
+                values['col_'+str(col)+'_row_'+str(row)] = None
+        
+        for response in self.study.responses_2:
+            card_x_pos = CardPosition.query.filter(CardPosition.response_id==response.id).filter(CardPosition.card==card_x).first()
+            card_y_pos = CardPosition.query.filter(CardPosition.response_id==response.id).filter(CardPosition.card==card_y).first()
+            
+            max_val = float('-inf')
+            min_val = float('inf')
+            
+            for data_value in response.data_values:
+                if data_value.data_value_label == data_value_label:
+                    if data_value.value > max_val:
+                        max_val = data_value.value
+                    if data_value.value < min_val:
+                        min_val = data_value.value
+
+            data_value = DataValue.query.filter(DataValue.response_id==response.id).filter(DataValue.column==card_x_pos.position).filter(DataValue.row==card_y_pos.position).first()
+            col_row = 'col_'+str(card_x_pos.position)+'_row_'+str(card_y_pos.position)
+
+            if values[col_row] is None:           
+                values[col_row] = ((data_value.value - min_val)/(max_val-min_val))
+            else:
+                values[col_row] += ((data_value.value - min_val)/(max_val-min_val))
+                
+        data = {"col": [], "row": [], "values": []}
+        
+        for col_row, value in values.items():
+            data['col'].append(int(col_row.split("_")[1]))
+            data['row'].append(int(col_row.split("_")[3]))
+            data['values'].append(value)
+        
+        normalised_average_values = []
+        count_data = self.calculate_count(card_x, card_y)
+        
+        for normalised_val, count in zip(data['values'], count_data['values']):
+            if normalised_val is not None and count_data is not None:
+                normalised_average_values.append(normalised_val/count)
+            else:
+                normalised_average_values.append(None)
+                
+        # normalised_average_values = [normalised_val / count for normalised_val, count in zip(data['values'], count_data['values'])]
+        data['values'] = normalised_average_values
+        
+        return data
 
 
-class CreateOneHeatMap(CreateHeatMaps):
-    def get_heat_maps(self, study_id, is_count, card_x_id, card_y_id, label):
-        if label:
-            heat_map = HeatMap.query.filter(
-                HeatMap.study_id == study_id,
-                HeatMap.card_y_id == int(card_y_id),
-                HeatMap.card_x_id == int(card_x_id),
-                HeatMap.data_value_label == label,
-                HeatMap.is_count == is_count,
-            ).first()
-        else:
-            heat_map = HeatMap.query.filter(
-                HeatMap.study_id == study_id,
-                HeatMap.card_y_id == int(card_y_id),
-                HeatMap.card_x_id == int(card_x_id),
-                HeatMap.is_count == is_count,
-            ).first()
+class CreateOneHeatMapCount(CreateHeatMap):
+    def create_plots(self, card_x, card_y, data_value_label):
+        self.mapper = LinearColorMapper(palette=self.palette, low=0, high=len(self.study.responses_2))
+        title = "Count"
 
-        return [heat_map]
+        data = self.calculate_count(card_x, card_y)
+        
+        tooltips = """ <div> Count: @values </div> """
+        self.create_heat_map(title, tooltips, card_x, card_y, data)
+
+
+class CreateOneHeatMap(CreateHeatMap):
+    def create_plots(self, card_x, card_y, data_value_label):
+        self.mapper = LinearColorMapper(palette=self.palette, low=0, high=1)
+        title = data_value_label.label
+                
+        data = self.calculate_price(card_x, card_y, data_value_label)
+
+        tooltips = """ <div> Value: @values </div> """
+        
+        self.create_heat_map(title, tooltips, card_x, card_y, data)
+

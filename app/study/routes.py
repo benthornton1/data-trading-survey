@@ -4,17 +4,14 @@ import itertools
 from flask import render_template, flash, redirect, url_for, request
 from flask_login import current_user, login_required
 from werkzeug.wrappers import Response as WrkResponse
+from munch import munchify
 
 from app import db
-from app.models import CardSet, Response, Study, HeatMap
-from app.responses.parsing.update_heat_maps import (
-    update_heat_maps,
-    normalise_data_values,
-)
+from app.models import CardSet, Response, Study, HeatMap, CardPosition, DataValue, DataValueLabel, Response2, Card
 from app.study import bp
 from app.study.decorators import *
 from app.study.forms import UserInfoForm
-
+import pdb
 
 @bp.route("/index")
 @bp.route("/")
@@ -38,18 +35,46 @@ def study(id, study):
 
     if request.method == "POST":
         data = request.get_json()
-        response = Response(
-            participant=current_user,
-            creator=study.creator,
-            study=study,
-            cards_x=data.get("cards_x"),
-            cards_y=data.get("cards_y"),
-            data_values=data.get("data_values"),
-        )
+        dv = []
+        cp = []
+        cards_x_munch = munchify(data.get('cards_x'))
+        cards_y_munch = munchify(data.get('cards_y'))   
+        data_values_munch = munchify(data.get('data_values'))
+        
+        for col, cards in cards_x_munch.items():
+            
+            col_num = int(col.split('_')[1])
+            for card in cards:
+                card_db = Card.query.filter_by(id=card.id).first()
+                card_position = CardPosition(position=col_num, card=card_db)
+                db.session.add(card_position)
+                cp.append(card_position)
 
-        db.session.add(response)
+        for row, cards in cards_y_munch.items():
+            
+            row_num = int(row.split('_')[1])
+            for card in cards:
+                card_db = Card.query.filter_by(id=card.id).first()
+                card_position = CardPosition(position=row_num, card=card_db)
+                db.session.add(card_position)
+                cp.append(card_position)
+                
+        for col_row, data_values in data_values_munch.items():
+            col_num = int(col_row.split('_')[1])
+            row_num = int(col_row.split('_')[3])
+            
+            for data_value in data_values:
+                data_value_label = DataValueLabel.query.filter_by(id=data_value.id).first()
+                if data_value.value is not None:
+                    data_value = DataValue(column=col_num, row=row_num, value=data_value.value, data_value_label=data_value_label) 
+                    db.session.add(data_value)
+                    dv.append(data_value)
+                
+
+        response2 = Response2(study=study, participant=current_user, card_positions=cp, data_values=dv)
+        pdb.set_trace()
+        db.session.add(response2)
         current_user.completed_study = True
-        update_heat_maps(response)
         db.session.commit()
 
         return dict(url=url_for("study.complete"))

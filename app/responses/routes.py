@@ -13,11 +13,11 @@ from werkzeug.exceptions import HTTPException
 
 from app import db
 from app.admin.decorators import valid_admin_required, admin_required
-from app.models import Card, DataValueLabel, HeatMap, Response, Study
+from app.models import Card, DataValueLabel, HeatMap, Response, Study, Response2
 from app.responses import bp
 from app.responses.parsing.add_heat_maps import (
-    CreateAllHeatMaps,
     CreateOneHeatMap,
+    CreateOneHeatMapCount,
 )
 from app.responses.parsing.average_response2 import average_response as avg
 from app.responses.parsing.create_pdf import create_pdf as gen_pdf
@@ -25,15 +25,15 @@ from app.responses.parsing.position_count import (
     get_card_x_responses,
     get_card_y_responses,
 )
-
+import pdb
 
 @bp.route("/<int:id>")
 @login_required
 @admin_required
 @valid_admin_required(model="study")
 def general(id, study):
-    script_x, div_x = get_card_x_responses(study, study.responses)
-    script_y, div_y = get_card_y_responses(study, study.responses)
+    script_x, div_x = get_card_x_responses(study)
+    script_y, div_y = get_card_y_responses(study)
 
     return render_template(
         "responses/general.html",
@@ -55,32 +55,30 @@ def heat_maps(id, study):
     if request.method == "POST":
         data = request.get_json()
         if data.get("type") == "one":
-            hm = CreateOneHeatMap()
+            
+            card_x = Card.query.filter_by(id=data.get('card_x_id')).first()
+            card_y = Card.query.filter_by(id=data.get('card_y_id')).first()
 
             if data.get("label_id"):
-                label = DataValueLabel.query.filter_by(
+                hm = CreateOneHeatMap(study)
+                data_value_label = DataValueLabel.query.filter_by(
                     id=data.get("label_id")
                 ).first()
+                
                 hm.add(
-                    card_x_id=data.get("card_x_id"),
-                    card_y_id=data.get("card_y_id"),
-                    label=label,
-                    study=study,
-                    is_count=data.get("is_count"),
+                    card_x=card_x,
+                    card_y=card_y,
+                    data_value_label=data_value_label,
                 )
             else:
+                hm = CreateOneHeatMapCount(study)
                 hm.add(
-                    card_x_id=data.get("card_x_id"),
-                    card_y_id=data.get("card_y_id"),
-                    study=study,
-                    is_count=data.get("is_count"),
+                    card_x=card_x,
+                    card_y=card_y,
+                    data_value_label=None,
                 )
-            plots = hm.plots
-        else:
-            hm = CreateAllHeatMaps()
-            hm.add(study=study, is_count=data.get("is_count"))
-            plots = hm.plots
-        return dict(plots=dict(plots))
+                   
+        return dict(plots=dict(hm.plots))
 
     return render_template(
         "responses/heat_maps.html",
@@ -97,41 +95,32 @@ def heat_maps(id, study):
 def compare_responses(id, study):
     if request.method == "POST":
         data = request.get_json()
-        try:
-            if data.get("response_id_1") == "average":
-                response_1 = munchify(avg(study))
-            else:
-                response_1 = Response.query.filter(
-                    Response.study_id == study.id,
-                    Response.id == int(data.get("response_id_1")),
-                ).first()
+        
+        if data.get("response_id_1") == "average":
+            response_1 = avg(study)
+        else:
+            response_1 = Response2.query.filter(
+                Response2.study == study,
+                Response2.id == int(data.get("response_id_1")),
+            ).first()
 
-            if data.get("response_id_2") == "average":
-                response_2 = munchify(avg(study))
-            else:
-                response_2 = Response.query.filter(
-                    Response.study_id == study.id,
-                    Response.id == int(data.get("response_id_2")),
-                ).first()
-
-            return dict(
-                data=render_template(
-                    "responses/response.html",
-                    data_value_labels=study.data_value_labels,
-                    card_set_x=study.card_set_x,
-                    card_set_y=study.card_set_y,
-                    study=study,
-                    responses=[response_1, response_2],
-                )
-            )
-
-        except:
-            flash("Invalid choice.")
+        if data.get("response_id_2") == "average":
+            response_2 = avg(study)
+        else:
+            response_2 = Response2.query.filter(
+                Response2.study == study,
+                Response2.id == int(data.get("response_id_2")),
+            ).first()
+        data = render_template(
+            "responses/response.html",
+            study=study,
+            responses=[response_1, response_2],
+        )
+        return dict(data=data)
 
     return render_template(
         "responses/compare_responses.html",
-        study=study,
-        responses=study.responses,
+        study=study
     )
 
 
@@ -144,10 +133,7 @@ def average_response(id, study):
     avg_response = avg(study)
     return render_template(
         "responses/average_response.html",
-        data_value_labels=study.data_value_labels,
         study=study,
-        card_set_x=study.card_set_x,
-        card_set_y=study.card_set_y,
         average_response=avg_response,
     )
 
@@ -172,5 +158,5 @@ def create_pdf(id, study):
             flash("Could not create pdf.")
 
     return render_template(
-        "/responses/create_pdf.html", study=study, responses=study.responses
+        "/responses/create_pdf.html", study=study, responses=study.responses_2
     )
