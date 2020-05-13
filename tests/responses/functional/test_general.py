@@ -4,7 +4,6 @@ from flask import url_for
 
 from tests.helpers import (
     login,
-    create_heat_maps,
     create_participant,
     create_study,
     create_user_group,
@@ -41,10 +40,7 @@ def test_get_general_study(client, init_database):
         study_response = create_response(
             client, participant=participant, creator=admin, study=study
         )
-        create_heat_maps(
-            client, creator=admin, study=study, responses=[study_response]
-        )
-
+        
         login(client, username="admin", password="password")
 
         response = client.get(
@@ -56,10 +52,7 @@ def test_get_general_study(client, init_database):
             bytes(str(len(study.responses)) + " Responses", "utf-8")
             in response.data
         )
-        assert (
-            bytes(str(len(study.heat_maps)) + " Heat Maps", "utf-8")
-            in response.data
-        )
+        
 
         client.get(url_for("auth.logout"))
         admin2 = create_admin(client, username="admin2", password="password")

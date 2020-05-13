@@ -31,7 +31,6 @@ from app.models import (
     Card,
     CardSet,
     DataValueLabel,
-    HeatMap,
     Participant,
     Study,
     User,
@@ -88,18 +87,13 @@ def study(id, study):
         UserGroup.creator == current_user
     ).filter(or_(UserGroup.study == study, UserGroup.study == None))
 
-    form.card_set_x.query = CardSet.query.filter(
-        CardSet.creator == current_user
-    )
+    form.card_set_x.query = CardSet.query.filter(CardSet.creator == current_user)
 
-    form.card_set_y.query = CardSet.query.filter(
-        CardSet.creator == current_user
-    )
+    form.card_set_y.query = CardSet.query.filter(CardSet.creator == current_user)
 
     if form.validate_on_submit():
         study.name = form.name.data
         study.description = form.desc.data
-
 
         if form.image.data is not None:
             file = form.image.data
@@ -176,10 +170,6 @@ def card_set(id, card_set):
     if form.validate_on_submit():
 
         old_cards = Card.query.filter(Card.card_set == card_set).delete()
-        for study in card_set.studies_x:
-            old_heat_maps = HeatMap.query.filter(study=study).delete()
-        for study in card_set.studies_y:
-            old_heat_maps = HeatMap.query.filter(study=study).delete()
         db.session.commit()
 
         card_set.name = form.card_set_name.data
@@ -264,18 +254,12 @@ def user_group(id, user_group):
 
         for user in form.users.data:
             # Create new User object for all emails in the form
-            username = "".join(
-                random.choice(string.ascii_letters) for i in range(8)
-            )
-            while (
-                Participant.query.filter_by(username=username).first() != None
-            ):
+            username = "".join(random.choice(string.ascii_letters) for i in range(8))
+            while Participant.query.filter_by(username=username).first() != None:
                 username = "".join(
                     random.choice(string.ascii_letters) for i in range(8)
                 )
-            new_participant = Participant(
-                email=user.get("email"), username=username
-            )
+            new_participant = Participant(email=user.get("email"), username=username)
             user_group.users.append(new_participant)
 
         try:

@@ -5,7 +5,8 @@ from bokeh.plotting import figure
 from munch import munchify
 
 from app.models import Card
-import pdb
+
+
 
 def get_card_x_responses(study):
 
@@ -16,14 +17,14 @@ def get_card_x_responses(study):
         cards.append(card.name)
         cards_x_data[card.name] = [0 for x in range(study.number_of_columns)]
 
-    for response in study.responses_2:
+    for response in study.responses:
         for card_position in response.card_positions:
             if card_position.card.card_set == study.card_set_x:
                 cards_x_data[card_position.card.name][card_position.position] += 1
-                
+
     x = [(column, card) for column in columns for card in cards]
     lists = list(cards_x_data.values())
-    counts = sum(zip(*lists), ())  
+    counts = sum(zip(*lists), ())
 
     title = "Count of each card in card set {} in each column".format(
         study.card_set_x.name
@@ -59,15 +60,14 @@ def get_card_y_responses(study):
         cards.append(card.name)
         cards_y_data[card.name] = [0 for x in range(study.number_of_rows)]
 
-    
-    for response in study.responses_2:
+    for response in study.responses:
         for card_position in response.card_positions:
             if card_position.card.card_set == study.card_set_y:
                 cards_y_data[card_position.card.name][card_position.position] += 1
 
     x = [(row, card) for row in rows for card in cards]
     lists = list(cards_y_data.values())
-    counts = sum(zip(*lists), ()) 
+    counts = sum(zip(*lists), ())
     title = "Count of each card in card set {} in each row".format(
         study.card_set_y.name
     )

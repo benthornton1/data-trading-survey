@@ -3,7 +3,7 @@ from urllib.parse import urlparse
 
 from flask import url_for
 
-from app.models import HeatMap, Response
+from app.models import Response
 from tests.helpers import (
     login,
     create_admin,
@@ -11,6 +11,8 @@ from tests.helpers import (
     create_study,
     create_user_group,
 )
+
+from munch import munchify
 
 
 def test_get_study(client, init_database):
@@ -536,14 +538,37 @@ def test_post_study(client, init_database):
         assert urlparse(response.location).path == url_for("study.complete")
 
         response_db = Response.query.filter_by(
-            participant_id=participant.id
+            participant=participant
         ).first()
 
-        assert response_db.cards_x == cards_x
-        assert response_db.cards_y == cards_y
-        assert response_db.data_values == data_values
-        assert response_db.creator_id == admin.id
-        assert response_db.participant_id == participant.id
-        assert response_db.study_id == study.id
-        assert response_db.creator == admin
+        assert response_db.study == study
         assert response_db.participant == participant
+        
+        cards_x_munch = munchify(cards_x)
+        cards_y_munch = munchify(cards_y)   
+        data_values_munch = munchify(data_values)
+
+        for col, cards in cards_x_munch.items():
+            col_num = int(col.split('_')[1])
+            for card in cards:
+                for card_position in response_db.card_positions:
+                    if card == card_position.card:
+                        assert card_position.col == col_num
+                        
+
+        for row, cards in cards_y_munch.items():
+            
+            row_num = int(row.split('_')[1])
+            for card in cards:
+                for card_position in response_db.card_positions:
+                    if card == card_position.card:
+                        assert card_position.row_num == row_num
+                
+        for col_row, data_values in data_values_munch.items():
+            col_num = int(col_row.split('_')[1])
+            row_num = int(col_row.split('_')[3])
+            
+            for data_value in data_values:
+                for data_value_db in response_db.data_values:
+                    if col_num == data_value_db.column and row_num == data_value_db.row and data_value_db.data_value_label.label == data_value.label:
+                        assert data_value_db.value == data_value.value

@@ -15,7 +15,7 @@ from tests.helpers import (
     create_card_set,
     create_cards,
     create_response,
-    create_heat_maps,
+    
 )
 
 

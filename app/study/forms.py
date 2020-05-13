@@ -43,9 +43,7 @@ f_occupations.close()
 
 
 class UserInfoForm(FlaskForm):
-    gender = SelectField(
-        "Gender", choices=data_genders, validators=[DataRequired()]
-    )
+    gender = SelectField("Gender", choices=data_genders, validators=[DataRequired()])
     age_group = SelectField(
         "Age Group", choices=data_age_groups, validators=[DataRequired()]
     )
@@ -61,7 +59,5 @@ class UserInfoForm(FlaskForm):
     occupation = SelectField(
         "Occupation", choices=data_occupations, validators=[DataRequired()]
     )
-    income = SelectField(
-        "Income", choices=data_incomes, validators=[DataRequired()]
-    )
+    income = SelectField("Income", choices=data_incomes, validators=[DataRequired()])
     submit = SubmitField("Submit")

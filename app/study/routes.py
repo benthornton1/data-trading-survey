@@ -7,11 +7,21 @@ from werkzeug.wrappers import Response as WrkResponse
 from munch import munchify
 
 from app import db
-from app.models import CardSet, Response, Study, HeatMap, CardPosition, DataValue, DataValueLabel, Response2, Card
+from app.models import (
+    CardSet,
+    Response,
+    Study,
+    CardPosition,
+    DataValue,
+    DataValueLabel,
+    Response,
+    Card,
+)
 from app.study import bp
 from app.study.decorators import *
 from app.study.forms import UserInfoForm
-import pdb
+from app.study.helpers import convert_response
+
 
 @bp.route("/index")
 @bp.route("/")
@@ -20,9 +30,7 @@ import pdb
 @completed_info_form_required
 @check_complete_study
 def index():
-    return render_template(
-        "study/index.html", study=current_user.user_group.study
-    )
+    return render_template("study/index.html", study=current_user.user_group.study)
 
 
 @bp.route("/<int:id>", methods=["GET", "POST"])
@@ -35,45 +43,16 @@ def study(id, study):
 
     if request.method == "POST":
         data = request.get_json()
-        dv = []
-        cp = []
-        cards_x_munch = munchify(data.get('cards_x'))
-        cards_y_munch = munchify(data.get('cards_y'))   
-        data_values_munch = munchify(data.get('data_values'))
-        
-        for col, cards in cards_x_munch.items():
-            
-            col_num = int(col.split('_')[1])
-            for card in cards:
-                card_db = Card.query.filter_by(id=card.id).first()
-                card_position = CardPosition(position=col_num, card=card_db)
-                db.session.add(card_position)
-                cp.append(card_position)
 
-        for row, cards in cards_y_munch.items():
-            
-            row_num = int(row.split('_')[1])
-            for card in cards:
-                card_db = Card.query.filter_by(id=card.id).first()
-                card_position = CardPosition(position=row_num, card=card_db)
-                db.session.add(card_position)
-                cp.append(card_position)
-                
-        for col_row, data_values in data_values_munch.items():
-            col_num = int(col_row.split('_')[1])
-            row_num = int(col_row.split('_')[3])
-            
-            for data_value in data_values:
-                data_value_label = DataValueLabel.query.filter_by(id=data_value.id).first()
-                if data_value.value is not None:
-                    data_value = DataValue(column=col_num, row=row_num, value=data_value.value, data_value_label=data_value_label) 
-                    db.session.add(data_value)
-                    dv.append(data_value)
-                
+        cards_x = data.get("cards_x")
+        cards_y = data.get("cards_y")
+        data_values = data.get("data_values")
 
-        response2 = Response2(study=study, participant=current_user, card_positions=cp, data_values=dv)
-        pdb.set_trace()
-        db.session.add(response2)
+        response = convert_response(cards_x, cards_y, data_values)
+        response.study = study
+        response.participant = current_user
+
+        db.session.add(response)
         current_user.completed_study = True
         db.session.commit()
 
@@ -107,9 +86,7 @@ def user_info():
             db.session.commit()
             return redirect(url_for("study.index"))
         except:
-            flash(
-                "There was a problem submitting your information. Please try again."
-            )
+            flash("There was a problem submitting your information. Please try again.")
             db.session.rollback()
     if request.method == "GET":
         form.gender.data = current_user.gender
@@ -143,9 +120,7 @@ def change_info():
             db.session.commit()
             return redirect(url_for("study.index"))
         except:
-            flash(
-                "There was a problem submitting your information. Please try again."
-            )
+            flash("There was a problem submitting your information. Please try again.")
             db.session.rollback()
     if request.method == "GET":
         form.gender.data = current_user.gender

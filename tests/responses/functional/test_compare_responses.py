@@ -6,7 +6,6 @@ from munch import munchify
 
 from tests.helpers import (
     login,
-    create_heat_maps,
     create_participant,
     create_study,
     create_user_group,
@@ -120,47 +119,11 @@ def test_post_compare_responses(client, init_database):
             json=data,
             follow_redirects=True,
         )
-
-        munch_response_1 = munchify(study_response_1.data_values)
-        munch_response_2 = munchify(study_response_2.data_values)
-
-        assert response.status_code == 200
-        assert (
-            bytes(str(munch_response_1.col_0_row_0[0].value), "utf-8")
-            in response.data
-        )
-        assert (
-            bytes(str(munch_response_2.col_0_row_0[0].value), "utf-8")
-            in response.data
-        )
-
-        data = {"response_id_1": "average", "response_id_2": "average"}
-
-        response = client.post(
-            url_for("responses.compare_responses", id=study.id),
-            json=data,
-            follow_redirects=True,
-        )
-
-        mean_val = str(
-            mean(
-                [
-                    munch_response_1.col_0_row_0[0].value,
-                    munch_response_2.col_0_row_0[0].value,
-                ]
-            )
-        )
-        assert response.status_code == 200
-        assert bytes(mean_val, "utf-8") in response.data
-
-        client.get(url_for("auth.logout"))
-        admin2 = create_admin(client, username="admin2", password="password")
-        login(client, username="admin2", password="password")
-
-        response = client.post(
-            url_for("responses.compare_responses", id=study.id),
-            json=data,
-            follow_redirects=False,
-        )
-
-        assert urlparse(response.location).path == url_for("auth.login")
+        
+        for data_value in study_response_1.data_values:
+            assert bytes(data_value.data_value_label.label, 'utf-8') in response.data
+            assert bytes(str(data_value.value), 'utf-8') in response.data
+           
+        for data_value in study_response_2.data_values:
+            assert bytes(data_value.data_value_label.label, 'utf-8') in response.data
+            assert bytes(str(data_value.value), 'utf-8') in response.data

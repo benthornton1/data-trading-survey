@@ -13,7 +13,7 @@ from werkzeug.exceptions import HTTPException
 
 from app import db
 from app.admin.decorators import valid_admin_required, admin_required
-from app.models import Card, DataValueLabel, HeatMap, Response, Study, Response2
+from app.models import Card, DataValueLabel, Response, Study, Response
 from app.responses import bp
 from app.responses.parsing.add_heat_maps import (
     CreateOneHeatMap,
@@ -25,7 +25,8 @@ from app.responses.parsing.position_count import (
     get_card_x_responses,
     get_card_y_responses,
 )
-import pdb
+
+
 
 @bp.route("/<int:id>")
 @login_required
@@ -55,29 +56,25 @@ def heat_maps(id, study):
     if request.method == "POST":
         data = request.get_json()
         if data.get("type") == "one":
-            
-            card_x = Card.query.filter_by(id=data.get('card_x_id')).first()
-            card_y = Card.query.filter_by(id=data.get('card_y_id')).first()
+
+            card_x = Card.query.filter_by(id=data.get("card_x_id")).first()
+            card_y = Card.query.filter_by(id=data.get("card_y_id")).first()
 
             if data.get("label_id"):
                 hm = CreateOneHeatMap(study)
                 data_value_label = DataValueLabel.query.filter_by(
                     id=data.get("label_id")
                 ).first()
-                
+
                 hm.add(
-                    card_x=card_x,
-                    card_y=card_y,
-                    data_value_label=data_value_label,
+                    card_x=card_x, card_y=card_y, data_value_label=data_value_label,
                 )
             else:
                 hm = CreateOneHeatMapCount(study)
                 hm.add(
-                    card_x=card_x,
-                    card_y=card_y,
-                    data_value_label=None,
+                    card_x=card_x, card_y=card_y, data_value_label=None,
                 )
-                   
+
         return dict(plots=dict(hm.plots))
 
     return render_template(
@@ -95,33 +92,26 @@ def heat_maps(id, study):
 def compare_responses(id, study):
     if request.method == "POST":
         data = request.get_json()
-        
+
         if data.get("response_id_1") == "average":
             response_1 = avg(study)
         else:
-            response_1 = Response2.query.filter(
-                Response2.study == study,
-                Response2.id == int(data.get("response_id_1")),
+            response_1 = Response.query.filter(
+                Response.study == study, Response.id == int(data.get("response_id_1")),
             ).first()
 
         if data.get("response_id_2") == "average":
-            response_2 = avg(study)
+            response = avg(study)
         else:
-            response_2 = Response2.query.filter(
-                Response2.study == study,
-                Response2.id == int(data.get("response_id_2")),
+            response = Response.query.filter(
+                Response.study == study, Response.id == int(data.get("response_id_2")),
             ).first()
         data = render_template(
-            "responses/response.html",
-            study=study,
-            responses=[response_1, response_2],
+            "responses/response.html", study=study, responses=[response_1, response],
         )
         return dict(data=data)
 
-    return render_template(
-        "responses/compare_responses.html",
-        study=study
-    )
+    return render_template("responses/compare_responses.html", study=study)
 
 
 @bp.route("/average/<int:id>")
@@ -132,9 +122,7 @@ def average_response(id, study):
 
     avg_response = avg(study)
     return render_template(
-        "responses/average_response.html",
-        study=study,
-        average_response=avg_response,
+        "responses/average_response.html", study=study, average_response=avg_response,
     )
 
 
@@ -158,5 +146,5 @@ def create_pdf(id, study):
             flash("Could not create pdf.")
 
     return render_template(
-        "/responses/create_pdf.html", study=study, responses=study.responses_2
+        "/responses/create_pdf.html", study=study, responses=study.responses
     )

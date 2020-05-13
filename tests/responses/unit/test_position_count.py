@@ -27,7 +27,7 @@ def test_get_card_x_responses(client, init_database):
         client, study=study, creator=admin, participant=participant
     )
 
-    updated_heat_maps = get_card_x_responses(study, [response])
+    updated_heat_maps = get_card_x_responses(study)
 
     assert isinstance(updated_heat_maps, tuple)
 
@@ -48,6 +48,6 @@ def test_get_card_y_responses(client, init_database):
         client, study=study, creator=admin, participant=participant
     )
 
-    updated_heat_maps = get_card_y_responses(study, [response])
+    updated_heat_maps = get_card_y_responses(study)
 
     assert isinstance(updated_heat_maps, tuple)

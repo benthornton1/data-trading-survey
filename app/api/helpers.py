@@ -65,6 +65,44 @@ def create_study_json(study):
     return json
 
 
+def create_card_position_json(card_position):
+    json = {
+        "id": card_position.id,
+        "position": card_position.position,
+        "card_id": card_position.card_id,
+        "response_id": card_position.response_id,
+    }
+    return json
+
+
+def create_data_value_json(data_value):
+    json = {
+        "id": data_value.id,
+        "column": data_value.column,
+        "row": data_value.row,
+        "value": data_value.value,
+        "data_value_label_id": data_value.data_value_label_id,
+        "response_id": data_value.response_id,
+    }
+    return json
+
+
+def create_response_json(response):
+    json = {
+        "id": response.id,
+        "study_id": response.study_id,
+        "participant_id": response.participant_id,
+        "card_positions": [
+            create_card_position_json(card_position)
+            for card_position in response.card_positions
+        ],
+        "data_values": [
+            create_data_value_json(data_value) for data_value in response.data_values
+        ],
+    }
+    return json
+
+
 def create_heat_map_json(heat_map):
     if heat_map.data_value_label:
         json = {
@@ -90,35 +128,20 @@ def create_heat_map_json(heat_map):
     return json
 
 
-def create_response_json(response):
-    json = {
-        "id": response.id,
-        "participant_id": response.participant_id,
-        "cards_x": response.cards_x,
-        "cards_y": response.cards_y,
-        "data_values": response.data_values,
-    }
-    return json
-
-
 def create_user_group_json(user_group):
     json = {}
     if user_group.study:
         json = {
             "id": user_group.id,
             "name": user_group.name,
-            "users": [
-                create_participant_json(user) for user in user_group.users
-            ],
+            "users": [create_participant_json(user) for user in user_group.users],
             "study": user_group.study.id,
         }
     else:
         json = {
             "id": user_group.id,
             "name": user_group.name,
-            "users": [
-                create_participant_json(user) for user in user_group.users
-            ],
+            "users": [create_participant_json(user) for user in user_group.users],
             "study": None,
         }
 

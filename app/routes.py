@@ -6,3 +6,8 @@ from app import bp
 @bp.route("")
 def index():
     return redirect(url_for("auth.login"))
+
+
+@bp.route
+def tests():
+    return render_template("tests.html")

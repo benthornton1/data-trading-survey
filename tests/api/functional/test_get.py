@@ -14,12 +14,13 @@ from tests.helpers import (
     create_card_set,
     create_cards,
     create_response,
-    create_heat_maps,
 )
 from app.api.helpers import (
     create_card_json,
     create_card_set_json,
     create_data_value_label_json,
+    create_card_position_json,
+    create_data_value_json
 )
 
 
@@ -51,10 +52,6 @@ def test_get_no_access_token(client, init_database):
         assert response.status_code == 401
         response = client.get(url_for("api.get_all_studies"))
         assert response.status_code == 401
-        response = client.get(url_for("api.get_heat_map", id=1))
-        assert response.status_code == 401
-        response = client.get(url_for("api.get_all_heat_maps"))
-        assert response.status_code == 401
         response = client.get(url_for("api.get_card_set", id=1))
         assert response.status_code == 401
         response = client.get(url_for("api.get_all_card_sets"))
@@ -75,8 +72,8 @@ def test_get_individual_response(client, init_database):
     with client.application.test_request_context():
         admin = create_admin(client)
         access_token = api_login(client)
-
-        study_response = create_response(client, creator=admin)
+        study = create_study(client, creator=admin)
+        study_response = create_response(client, creator=admin, study=study, participant=study.user_group.users[0])
 
         response = client.get(
             url_for("api.get_response", id=1),
@@ -91,10 +88,10 @@ def test_get_individual_response(client, init_database):
 
         json = response.json
         assert json["id"] == study_response.id
+        assert json["study_id"] == study_response.study_id
         assert json["participant_id"] == study_response.participant_id
-        assert json["cards_x"] == study_response.cards_x
-        assert json["cards_y"] == study_response.cards_y
-        assert json["data_values"] == study_response.data_values
+        assert json["card_positions"] == [create_card_position_json(card_position) for card_position in study_response.card_positions]
+        assert json["data_values"] == [create_data_value_json(data_value) for data_value in study_response.data_values]
 
 
 def test_get_all_responses(client, init_database):
@@ -108,11 +105,13 @@ def test_get_all_responses(client, init_database):
         access_token = api_login(client)
         participant_1 = create_participant(client, username="p1")
         participant_2 = create_participant(client, username="p2")
+        user_group = create_user_group(client, participants=[participant_1, participant_2], creator=admin)
+        study = create_study(client, creator=admin, user_group=user_group)
         study_response_1 = create_response(
-            client, creator=admin, participant=participant_1
+            client, creator=admin, participant=participant_1, study=study
         )
         study_response_2 = create_response(
-            client, creator=admin, participant=participant_2
+            client, creator=admin, participant=participant_2, study=study
         )
 
         response = client.get(
@@ -123,7 +122,6 @@ def test_get_all_responses(client, init_database):
                 )
             },
         )
-
         assert response.status_code == 200
         assert len(response.json) == 2
 
@@ -392,92 +390,6 @@ def test_get_all_studies(client, init_database):
 
         assert response.status_code == 200
         assert len(json) == 2
-
-
-def test_get_individual_heat_map(client, init_database):
-    """
-    GIVEN a Flask application, logged in admin and a study created
-    WHEN '/api/get/heat_map/1' is requested with a valid access token (GET)
-    THEN check response is valid, and content is correct.
-    """
-    with client.application.test_request_context():
-        admin = create_admin(client)
-        access_token = api_login(client)
-        participant = create_participant(client)
-        user_group = create_user_group(
-            client, creator=admin, participants=[participant]
-        )
-        study = create_study(client, creator=admin, user_group=user_group)
-        response = create_response(
-            client, creator=admin, participant=participant, study=study
-        )
-        heat_maps = create_heat_maps(
-            client, study=study, responses=[response], creator=admin
-        )
-        response = client.get(
-            url_for("api.get_heat_map", id=heat_maps[0].id),
-            headers={
-                "Authorization": "Bearer {}".format(
-                    access_token["access_token"]
-                )
-            },
-        )
-
-        json = response.json
-
-        assert response.status_code == 200
-        assert json["id"] == heat_maps[0].id
-        assert json["card_x"] == create_card_json(heat_maps[0].card_x)
-        assert json["card_y"] == create_card_json(heat_maps[0].card_y)
-        assert json["values"] == heat_maps[0].values
-        if heat_maps[0].data_value_label:
-            assert (
-                json["data_value_label_id"] == heat_maps[0].data_value_label.id
-            )
-        else:
-            assert json["data_value_label_id"] == None
-        assert json["is_count"] == heat_maps[0].is_count
-
-
-def test_get_all_heat_maps(client, init_database):
-    """
-    GIVEN a Flask application, logged in admin and a study created
-    WHEN '/api/get/heat_map/all' is requested with a valid access token (GET)
-    THEN check response is valid, and content is correct.
-    """
-    with client.application.test_request_context():
-        admin = create_admin(client)
-        access_token = api_login(client)
-        participant_1 = create_participant(client, username="p1")
-        participant_2 = create_participant(client, username="p2")
-        user_group = create_user_group(
-            client, creator=admin, participants=[participant_1, participant_2]
-        )
-        study = create_study(client, creator=admin, user_group=user_group)
-        response_1 = create_response(
-            client, creator=admin, participant=participant_1, study=study
-        )
-        response_2 = create_response(
-            client, creator=admin, participant=participant_2, study=study
-        )
-        heat_maps = create_heat_maps(
-            client,
-            study=study,
-            responses=[response_1, response_2],
-            creator=admin,
-        )
-        response = client.get(
-            url_for("api.get_all_heat_maps"),
-            headers={
-                "Authorization": "Bearer {}".format(
-                    access_token["access_token"]
-                )
-            },
-        )
-
-        json = response.json
-        assert response.status_code == 200
-        assert len(json) == len(heat_maps)
 
 
 def test_get_individual_cards(client, init_database):

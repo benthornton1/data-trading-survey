@@ -52,23 +52,23 @@ $(document).ready(function(){
         });
         $(".loading").empty();
     }
-    // $( ".heat-map-grid" ).sortable({
-    //     connectWith:".heat-map-grid"
-    // });
+    $( ".heat-map-grid" ).sortable({
+        connectWith:".heat-map-grid"
+    });
 
 
-    // $('.heat-map').mousemove(function(event){
-    //     $(".selected").removeClass("selected");
-    //     $(event.target).addClass("selected");
-    // });
+    $('.heat-map').mousemove(function(event){
+        $(".selected").removeClass("selected");
+        $(event.target).addClass("selected");
+    });
 
-    // $( ".heat-map" ).mouseleave(function() {
-    //     $(".selected").removeClass("selected");    
-    // });
+    $( ".heat-map" ).mouseleave(function() {
+        $(".selected").removeClass("selected");    
+    });
 
-    // $('#remove-all-heatmaps').click(function(){
-    //     $(".heat-map").remove();
-    // });
+    $('#remove-all-heatmaps').click(function(){
+        $(".heat-map").remove();
+    });
 
 
 });

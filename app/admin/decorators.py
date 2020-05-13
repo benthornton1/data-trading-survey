@@ -4,7 +4,7 @@ from functools import wraps
 from flask import redirect, url_for, flash
 from flask_login import current_user
 
-from app.models import Card, CardSet, HeatMap, Response, Study, User, UserGroup
+from app.models import Card, CardSet, Response, Study, User, UserGroup
 
 
 def admin_required(function):
@@ -72,18 +72,14 @@ def check_delete(function):
         if "card_set" in kwargs:
             card_set = kwargs["card_set"]
             if card_set.studies_x:
-                studies_str = str(
-                    [study.name for study in card_set.studies_x]
-                )[1:-1]
+                studies_str = str([study.name for study in card_set.studies_x])[1:-1]
                 string = "You cannot delete this Card Set as it is currently associated with {studies} Studies, remove these associations before deleting this Card Set.".format(
                     studies=studies_str
                 )
                 flash(string)
                 return redirect(url_for("admin.index"))
             if card_set.studies_y:
-                studies_str = str(
-                    [study.name for study in card_set.studies_y]
-                )[1:-1]
+                studies_str = str([study.name for study in card_set.studies_y])[1:-1]
                 string = "You cannot delete this Card Set as it is currently associated with {studies} Studies, remove these associations before deleting this Card Set.".format(
                     studies=studies_str
                 )
@@ -94,9 +90,7 @@ def check_delete(function):
         if "study" in kwargs:
             study = kwargs["study"]
             if not check_study_date([study]):
-                flash(
-                    "You cannot delete this Study as it is currently in progress."
-                )
+                flash("You cannot delete this Study as it is currently in progress.")
                 return redirect(url_for("admin.index"))
             else:
                 return function(*args, **kwargs)
@@ -139,9 +133,7 @@ def check_edit(function):
         if "study" in kwargs:
             study = kwargs["study"]
             if not check_study_date([study]):
-                flash(
-                    "You cannot edit this Study as it is currently in progress."
-                )
+                flash("You cannot edit this Study as it is currently in progress.")
                 return redirect(url_for("admin.index"))
             else:
                 return function(*args, **kwargs)
