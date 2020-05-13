@@ -3,7 +3,7 @@ from datetime import date, timedelta
 from flask import url_for
 
 from app.admin.forms import StudyForm
-from app.models import CardSet, HeatMap, Response, Study, UserGroup
+from app.models import CardSet, Response, Study, UserGroup
 from tests.helpers import (
     create_admin,
     create_card_set,
@@ -81,11 +81,7 @@ def test_create_valid_study(client, init_database):
         assert bytes(str(study_db.number_of_columns), "utf-8") in response.data
         assert bytes(str(study_db.number_of_rows), "utf-8") in response.data
         assert bytes("No", "utf-8") in response.data
-        assert len(study_db.heat_maps) == (
-            len(study_db.card_set_x.cards)
-            * len(study_db.card_set_y.cards)
-            * len(study_db.data_value_labels)
-        ) + (len(study_db.card_set_x.cards) * len(study_db.card_set_y.cards))
+
 
 
 def test_create_invalid_study(client, init_database):
@@ -174,7 +170,6 @@ def test_delete_current_study(client, init_database):
         assert study_db.card_set_x == study.card_set_x
         assert study_db.card_set_y == study.card_set_y
         assert study_db.data_value_labels == study.data_value_labels
-        assert study_db.heat_maps == study.heat_maps
         assert study_db.responses == study.responses
         assert study_db.user_group == study.user_group
 
@@ -207,7 +202,6 @@ def test_delete_future_study(client, init_database):
         assert Study.query.filter_by(id=1).first() is None
         assert UserGroup.query.filter_by(id=1).first() is None
         assert CardSet.query.filter_by(id=1).first() is not None
-        assert HeatMap.query.all() == []
         assert Response.query.all() == []
 
 
@@ -283,11 +277,6 @@ def test_edit_future_study(client, init_database):
         assert updated_study.number_of_rows == form.number_of_rows.data
         assert updated_study.start_date == form.start_date.data
         assert updated_study.end_date == form.end_date.data
-        assert len(updated_study.heat_maps) == (
-            len(study.card_set_x.cards)
-            * len(study.card_set_y.cards)
-            * len(study.data_value_labels)
-        ) + (len(study.card_set_x.cards) * len(study.card_set_y.cards))
         assert len(updated_study.data_value_labels) == len(
             study.data_value_labels
         )

@@ -5,7 +5,6 @@ from flask_login import current_user
 
 from app import db
 from app.models import (
-    HeatMap,
     CardSet,
     Response,
     Card,
@@ -15,9 +14,7 @@ from app.models import (
     DataValueLabel,
     Study,
 )
-from app.responses.parsing.find_combinations import find_combinations
-from app.responses.parsing.update_heat_maps import update_heat_maps
-
+from app.study.helpers import convert_response
 
 def api_login(client, username="admin", password="password"):
     response = client.post(
@@ -113,7 +110,8 @@ def create_study(
             card_set_y = create_card_set(client, creator=creator)
         if not data_value_labels:
             data_value_labels = [
-                create_data_value_label(client, creator=creator)
+                create_data_value_label(client, creator=creator, label="You get the benefit (e.g. Personalised Service)"),
+                create_data_value_label(client, creator=creator, label="Data Consumer gets the benefit (e.g. Supply Chain gets the benefit)")
             ]
         study = Study(
             name=name,
@@ -816,31 +814,12 @@ def create_response(
                     },
                 ],
             }
-        response = Response(
-            cards_x=cards_x,
-            cards_y=cards_y,
-            data_values=data_values,
-            creator=creator,
-            participant=participant,
-            study=study,
-        )
+        response = convert_response(cards_x, cards_y, data_values)
+        response.participant = participant
+        response.study = study
+        
         db.session.add(response)
         db.session.commit()
 
         return response
 
-
-def create_heat_maps(client, creator=None, study=None, responses=None):
-    with client.application.test_request_context():
-        if not creator:
-            creator = create_admin(client)
-        if not study:
-            study = create_study(client, creator=creator)
-        if responses is None:
-            responses = [create_response(client, creator=creator)]
-        find_combinations(study)
-        for response in responses:
-            update_heat_maps(response)
-        heat_maps = HeatMap.query.filter_by(study=study).all()
-
-        return heat_maps

@@ -17,19 +17,20 @@ from app.api.helpers import (
     create_study_json,
     create_heat_map_json,
     create_user_group_json,
+    create_response_json,
 )
 from app.models import (
     Admin,
     Card,
     CardSet,
     DataValueLabel,
-    HeatMap,
     Participant,
     Response,
     Study,
     User,
     UserGroup,
 )
+
 
 error_not_found = {"error": "resource not found"}
 
@@ -60,34 +61,27 @@ def login():
 @bp.route("/get/response/<int:id>")
 @jwt_required
 def get_response(id):
-    response = (
-        Response.query.filter(Response.id == id)
-        .filter(Response.creator_id == get_jwt_identity())
-        .first()
-    )
-    if response is None:
+    response = Response.query.filter(Response.id == id).first()
+    owner_studies = Study.query.filter_by(creator_id=get_jwt_identity()).all()
+    if response is None or response.study not in owner_studies:
         return jsonify(error_not_found)
     else:
-        return jsonify(
-            {
-                "id": response.id,
-                "participant_id": response.participant_id,
-                "cards_x": response.cards_x,
-                "cards_y": response.cards_y,
-                "data_values": response.data_values,
-            }
-        )
+        return jsonify(create_response_json(response))
 
 
 @bp.route("get/response/all")
 @jwt_required
 def get_all_responses():
-    responses = Response.query.filter_by(creator_id=get_jwt_identity()).all()
-    if not responses:
+    studies = Study.query.filter_by(creator_id=get_jwt_identity()).all()
+    if not studies:
         return jsonify(error_not_found)
     else:
         return jsonify(
-            [create_response_json(response) for response in responses]
+            [
+                create_response_json(response)
+                for study in studies
+                for response in study.responses
+            ]
         )
 
 
@@ -107,9 +101,7 @@ def get_participant(id):
 @bp.route("/get/participant/all")
 @jwt_required
 def get_all_participants():
-    user_groups = UserGroup.query.filter_by(
-        creator_id=get_jwt_identity()
-    ).all()
+    user_groups = UserGroup.query.filter_by(creator_id=get_jwt_identity()).all()
     if not user_groups:
         return jsonify(error_not_found)
     else:
@@ -137,9 +129,7 @@ def get_user_group(id):
 @bp.route("/get/user_group/all")
 @jwt_required
 def get_all_user_groups():
-    user_groups = UserGroup.query.filter_by(
-        creator_id=get_jwt_identity()
-    ).all()
+    user_groups = UserGroup.query.filter_by(creator_id=get_jwt_identity()).all()
     if not user_groups:
         return jsonify(error_not_found)
     else:
@@ -204,32 +194,6 @@ def get_all_studies():
         return jsonify([create_study_json(study) for study in studies])
 
 
-@bp.route("/get/heat_map/<int:id>")
-@jwt_required
-def get_heat_map(id):
-    heat_map = (
-        HeatMap.query.filter(HeatMap.id == id)
-        .filter(CardSet.creator_id == get_jwt_identity())
-        .first()
-    )
-    if heat_map is None:
-        return jsonify(error_not_found)
-    else:
-        return jsonify(create_heat_map_json(heat_map))
-
-
-@bp.route("/get/heat_map/all")
-@jwt_required
-def get_all_heat_maps():
-    heat_maps = HeatMap.query.filter_by(creator_id=get_jwt_identity()).all()
-    if not heat_maps:
-        return jsonify(error_not_found)
-    else:
-        return jsonify(
-            [create_heat_map_json(heat_map) for heat_map in heat_maps]
-        )
-
-
 @bp.route("/get/card_set/<int:id>")
 @jwt_required
 def get_card_set(id):
@@ -251,9 +215,7 @@ def get_all_card_sets():
     if not card_sets:
         return jsonify(error_not_found)
     else:
-        return jsonify(
-            [create_card_set_json(card_set) for card_set in card_sets]
-        )
+        return jsonify([create_card_set_json(card_set) for card_set in card_sets])
 
 
 @bp.route("/get/card/<int:id>")

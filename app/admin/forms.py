@@ -35,12 +35,9 @@ class UserForm(Form):
 class CardForm(Form):
     card_name = StringField("Card Name", validators=[DataRequired()])
     image = FileField(
-        "Image",
-        validators=[FileAllowed(["jpg", "png", ".gif"], "Images only")],
+        "Image", validators=[FileAllowed(["jpg", "png", ".gif"], "Images only")],
     )
-    desc = TextAreaField(
-        "Description", validators=[Optional(), Length(max=200)]
-    )
+    desc = TextAreaField("Description", validators=[Optional(), Length(max=200)])
 
 
 class CardSetForm(FlaskForm):
@@ -52,28 +49,19 @@ class CardSetForm(FlaskForm):
 
 class StudyForm(FlaskForm):
     name = StringField("Name", validators=[DataRequired()])
-    desc = TextAreaField(
-        "Description", validators=[Optional(), Length(max=400)]
-    )
+    desc = TextAreaField("Description", validators=[Optional(), Length(max=400)])
     image = FileField(
-        "Image",
-        validators=[FileAllowed(["jpg", "png", ".gif"], "Images only")],
+        "Image", validators=[FileAllowed(["jpg", "png", ".gif"], "Images only")],
     )
-    card_set_x = QuerySelectField(
-        "Card Set for x-axis", validators=[DataRequired()]
-    )
-    card_set_y = QuerySelectField(
-        "Card Set for y-axis", validators=[DataRequired()]
-    )
+    card_set_x = QuerySelectField("Card Set for x-axis", validators=[DataRequired()])
+    card_set_y = QuerySelectField("Card Set for y-axis", validators=[DataRequired()])
     data_values = SelectField(
         "Data Values",
         choices=[("0", 0), ("1", 1), ("2", 2)],
         validators=[DataRequired()],
         default=2,
     )
-    data_value_labels = FieldList(
-        StringField("Data Value Label"), min_entries=2
-    )
+    data_value_labels = FieldList(StringField("Data Value Label"), min_entries=2)
     number_of_columns = SelectField(
         "Number of Columns",
         choices=[("2", 2), ("3", 3), ("4", 4), ("5", 5)],
@@ -95,10 +83,7 @@ class StudyForm(FlaskForm):
         validators=[DataRequired()],
     )
     end_date = DateField(
-        "Study End Date",
-        id="datepick",
-        format="%Y-%m-%d",
-        validators=[DataRequired()],
+        "Study End Date", id="datepick", format="%Y-%m-%d", validators=[DataRequired()],
     )
     submit = SubmitField("Create")
 
@@ -120,7 +105,9 @@ class StudyForm(FlaskForm):
                 self.end_date.errors.append(msg)
                 result = False
         if self.card_set_x.data == self.card_set_y.data:
-            msg = "Card Set for x-axis cannot have the same value as Card Set for y-axis."
+            msg = (
+                "Card Set for x-axis cannot have the same value as Card Set for y-axis."
+            )
             self.card_set_x.errors.append(msg)
             result = False
         return result
@@ -128,7 +115,5 @@ class StudyForm(FlaskForm):
 
 class UserGroupForm(FlaskForm):
     name = StringField("User Group Name", validators=[DataRequired()])
-    users = FieldList(
-        label="Users", unbound_field=FormField(UserForm), min_entries=1
-    )
+    users = FieldList(label="Users", unbound_field=FormField(UserForm), min_entries=1)
     submit = SubmitField("Create")

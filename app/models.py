@@ -56,7 +56,6 @@ class Admin(User):
     data_value_labels = db.relationship("DataValueLabel", backref="creator")
     studies = db.relationship("Study", backref="creator")
     card_sets = db.relationship("CardSet", backref="creator")
-    heat_maps = db.relationship("HeatMap", backref="creator")
 
     __mapper_args__ = {"polymorphic_identity": "admin"}
 
@@ -86,7 +85,6 @@ class DataValueLabel(db.Model):
     study_id = db.Column("Study", db.ForeignKey("study.id"))
     creator_id = db.Column("Admin", db.ForeignKey("user.id"))
 
-    heat_maps = db.relationship("HeatMap", backref="data_value_label")
     data_values = db.relationship("DataValue", backref="data_value_label")
 
 
@@ -116,15 +114,10 @@ class Study(db.Model):
     data_value_labels = db.relationship(
         "DataValueLabel", backref="study", cascade="all, delete"
     )
-    heat_maps = db.relationship(
-        "HeatMap", backref="study", cascade="all, delete"
-    )
     responses = db.relationship(
         "Response", backref="study", cascade="all, delete"
     )
-    responses_2 = db.relationship(
-        "Response2", backref="study", cascade="all,delete"
-    )
+    
     
     def __repr__(self):
         return str(self.name)
@@ -160,48 +153,6 @@ class Card(db.Model):
 
 class Response(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    cards_x = db.Column(db.JSON)
-    cards_y = db.Column(db.JSON)
-    data_values = db.Column(db.JSON)
-
-    creator_id = db.Column("Admin", db.ForeignKey("user.id"))
-    participant_id = db.Column("Participant", db.ForeignKey("user.id"))
-    study_id = db.Column(db.Integer, db.ForeignKey("study.id"))
-
-    creator = db.relationship(
-        "Admin", foreign_keys=creator_id, backref="responses"
-    )
-    participant = db.relationship(
-        "Participant", foreign_keys=participant_id, backref="response"
-    )
-
-    def __repr__(self):
-        return str(self.id)
-
-
-class HeatMap(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    values = db.Column(db.JSON)
-    is_count = db.Column(db.Boolean)
-
-    card_x_id = db.Column(db.Integer, db.ForeignKey("card.id"))
-    card_y_id = db.Column(db.Integer, db.ForeignKey("card.id"))
-    data_value_label_id = db.Column(
-        db.Integer, db.ForeignKey("data_value_label.id")
-    )
-    creator_id = db.Column("Admin", db.ForeignKey("user.id"))
-    study_id = db.Column(db.Integer, db.ForeignKey("study.id"))
-
-    card_x = db.relationship("Card", foreign_keys=card_x_id)
-    card_y = db.relationship("Card", foreign_keys=card_y_id)
-
-    def __repr__(self):
-        return str(self.id)
-
-
-class Response2(db.Model):
-    __tablename__ = 'response_2'
-    id = db.Column(db.Integer, primary_key=True)
     
     study_id = db.Column("Study", db.ForeignKey("study.id"))
     participant_id = db.Column("Participant", db.ForeignKey("user.id"))
@@ -209,7 +160,7 @@ class Response2(db.Model):
     card_positions = db.relationship('CardPosition', backref='response')
     data_values = db.relationship('DataValue', backref='response')
     participant = db.relationship(
-        "Participant", foreign_keys=participant_id, backref="response2"
+        "Participant", foreign_keys=participant_id, backref="response"
     )
     
     
@@ -218,7 +169,7 @@ class CardPosition(db.Model):
     position = db.Column(db.Integer)
     
     card_id = db.Column("Card", db.ForeignKey("card.id"))
-    response_id = db.Column("Response2", db.ForeignKey("response_2.id"))
+    response_id = db.Column("Response", db.ForeignKey("response.id"))
     
 
 class DataValue(db.Model):
@@ -228,8 +179,8 @@ class DataValue(db.Model):
     value = db.Column(db.Integer)  
 
     data_value_label_id = db.Column("DataValueLabel", db.ForeignKey("data_value_label.id"))
-    response_id = db.Column("Response2", db.ForeignKey("response_2.id"))
-    
+    response_id = db.Column("Response", db.ForeignKey("response.id"))
+
     
 @login.user_loader
 def load_user(id):

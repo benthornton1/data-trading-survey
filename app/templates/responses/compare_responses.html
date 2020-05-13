@@ -15,7 +15,7 @@
             <label>Response 1</label>
             <select id="response-1" class="form-control" csrf_token="{{ csrf_token() }}">
                 <option response_id="average">Average</option>
-                {% for response in study.responses_2 %}
+                {% for response in study.responses %}
                     <option response_id="{{ response.id }}">{{ response.participant.username }}</option>
                 {% endfor %}
             </select>
@@ -24,7 +24,7 @@
             <label>Response 2</label>
             <select id="response-2" class="form-control" csrf_token="{{ csrf_token() }}">
                     <option response_id="average">Average</option>
-                {% for response in study.responses_2 %}
+                {% for response in study.responses %}
                     <option response_id="{{ response.id }}">{{ response.participant.username }}</option>
                 {% endfor %}
             </select>

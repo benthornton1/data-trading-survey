@@ -11,16 +11,12 @@ from app.models import Study, UserGroup
 
 def check_studies(app):
     with app.app_context():
-        studies = Study.query.filter(
-            func.DATE(Study.start_date) == date.today()
-        ).all()
+        studies = Study.query.filter(func.DATE(Study.start_date) == date.today()).all()
         letters = string.ascii_letters
         strength = 8
         for study in studies:
             if study.mail_sent is False:
-                user_group = UserGroup.query.filter_by(
-                    id=study.user_group_id
-                ).first()
+                user_group = UserGroup.query.filter_by(id=study.user_group_id).first()
                 if user_group:
                     with mail.connect() as conn:
 
