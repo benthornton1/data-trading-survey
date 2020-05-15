@@ -5,6 +5,7 @@ from munch import munchify
 
 from app.models import Card
 from app.models import DataValue, Response, CardPosition
+from app.responses.parsing.calculate_response_max_min import calculate_response_min, calculate_response_max
 
 
 def average_response(study):
@@ -36,12 +37,15 @@ def average_response_data_values(study):
                 if (
                     data_value.column == data_value_derived.column
                     and data_value.row == data_value_derived.row
+                    and data_value.data_value_label == data_value_derived.data_value_label
                 ):
-                    data_value_derived.value += data_value.value
+                    max_val = calculate_response_max(response, data_value.data_value_label)
+                    min_val = calculate_response_min(response, data_value.data_value_label)
+                    data_value_derived.value += (data_value.value - min_val)/(max_val-min_val)
                     data_values_derived[data_value_derived] += 1
 
     for data_value_derived, count in data_values_derived.items():
-        data_value_derived.value = data_value_derived.value / count
+        data_value_derived.value = float("{:.2f}".format(data_value_derived.value / count))
 
     return list(data_values_derived.keys())
 
@@ -62,7 +66,7 @@ def average_card_positions_x(study):
 
     for card_position_derived, count in card_positions_derived.items():
         try:
-            card_position_derived.position = int(card_position_derived.position / count)
+            card_position_derived.position = round(card_position_derived.position / count)
         except ZeroDivisionError:
             card_position_derived.position = 0
 
@@ -84,7 +88,7 @@ def average_card_positions_y(study):
 
     for card_position_derived, count in card_positions_derived.items():
         try:
-            card_position_derived.position = int(card_position_derived.position / count)
+            card_position_derived.position = round(card_position_derived.position / count)
         except ZeroDivisionError:
             card_position_derived.position = 0
     return list(card_positions_derived.keys())

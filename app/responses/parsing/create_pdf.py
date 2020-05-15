@@ -13,24 +13,22 @@ from app.responses.parsing.average_response2 import average_response as ggh
 
 
 def create_pdf(study, all_responses=False, average_response2=False, response_ids=False):
-    average_response_pdf = None
     responses_pdf = []
     if average_response2:
-        average_response_pdf = ggh(study)
+        responses_pdf.append(ggh(study))
     if all_responses:
-        responses_pdf = study.responses
+        responses_pdf.extend(study.responses)
     if response_ids:
         responses = (
             Response.query.filter(Response.id.in_(response_ids))
             .filter(Response.study == study)
             .all()
         )
-        responses_pdf = responses
+        responses_pdf.extend(responses)
 
     html = render_template(
         "responses/response.html",
         study=study,
-        average_response=average_response_pdf,
         responses=responses_pdf,
     )
     file_name = (

@@ -16,7 +16,7 @@ from sqlalchemy import desc
 
 from app import db
 from app.models import Card, Response, CardPosition, DataValue
-
+from app.responses.parsing.calculate_response_max_min import calculate_response_min, calculate_response_max
 
 
 class CreateHeatMap(ABC):
@@ -179,16 +179,9 @@ class CreateHeatMap(ABC):
                     .first()
                 )
 
-                max_val = float("-inf")
-                min_val = float("inf")
-
-                for data_value in response.data_values:
-                    if data_value.data_value_label == data_value_label:
-                        if data_value.value > max_val:
-                            max_val = data_value.value
-                        if data_value.value < min_val:
-                            min_val = data_value.value
-
+                max_val = calculate_response_max(response, data_value_label)
+                min_val = calculate_response_min(response, data_value_label)
+                
                 data_value = (
                     DataValue.query.filter(DataValue.response_id == response.id)
                     .filter(DataValue.column == card_x_pos.position)
@@ -224,7 +217,7 @@ class CreateHeatMap(ABC):
 
         for normalised_val, count in zip(data["values"], count_data["values"]):
             if normalised_val is not None and count_data is not None:
-                normalised_average_values.append(normalised_val / count)
+                normalised_average_values.append(float("{:.2f}".format(normalised_val / count)))
             else:
                 normalised_average_values.append(None)
 
