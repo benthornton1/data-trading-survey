@@ -122,7 +122,7 @@ def average_response(id, study):
 
     avg_response = avg(study)
     return render_template(
-        "responses/average_response.html", study=study, average_response=avg_response,
+        "responses/average_response.html", study=study, responses=[avg_response]
     )
 
 

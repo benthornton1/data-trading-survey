@@ -44,3 +44,8 @@ def test_average_response(client, init_database):
 
         avg_response = average_response(study)
         
+        for card_position_avg in avg_response.card_positions:
+            for card_position in response_1.card_positions:
+                if card_position_avg.card == card_position.card:
+                    assert card_position_avg.position == card_position.position
+        

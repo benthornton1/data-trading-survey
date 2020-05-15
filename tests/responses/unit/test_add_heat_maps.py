@@ -139,7 +139,7 @@ def test_calculate_price(client, init_database):
     c = CreateOneHeatMapCount(study)
     
     data = c.calculate_price(card_x=c_1, card_y=c_2, data_value_label=study.data_value_labels[0])
-    assert avg_normalised in data["values"]
+    assert float("{:.2f}".format(avg_normalised)) in data["values"]
 
 
 def test_calculate_count(client, init_database):
